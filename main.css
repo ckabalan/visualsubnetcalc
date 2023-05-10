@@ -1,0 +1,65 @@
+:root {
+  --split-foreground: #000000;
+  --split-background: indianred;
+  --join-foreground: #000000;
+  --join-background: skyblue;
+}
+
+#calc {
+    vertical-align: middle;
+}
+
+#calc>tbody>tr>td, #calc>tbody>tr>th, #calc>tfoot>tr>td, #calc>tfoot>tr>th, #calc>thead>tr>td, #calc>thead>tr>th {
+    /* Equivalent to p-1 */
+    padding: 0.25rem;
+    /* Equivalent to p-2 */
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+#calc span.split {
+    color: var(--split-background);
+}
+
+#calc span.join {
+    color: var(--join-background);
+}
+
+#calc td.split {
+    background-color: var(--split-background);
+    color: var(--split-foreground);
+}
+
+#calc td.join {
+    background-color: var(--join-background);
+    color: var(--join-foreground);
+}
+
+#calc td.split, #calc td.join {
+    padding: 0;
+}
+
+#calc td.split span, #calc td.join span {
+    padding-right: 0.4rem;
+}
+#class .note {
+
+}
+
+#calc .note input {
+    border: none !important;
+    border-color: transparent !important;
+}
+
+/* https://stackoverflow.com/a/47245068/606974 */
+.rotate {
+    vertical-align: middle;
+    text-align: end;
+}
+.rotate span {
+    -ms-writing-mode: tb-rl;
+    -webkit-writing-mode: vertical-rl;
+    writing-mode: vertical-rl;
+    white-space: nowrap;
+    padding-top: 0.5rem;
+}
