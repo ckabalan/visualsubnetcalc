@@ -5,6 +5,25 @@
   --join-background: skyblue;
 }
 
+.container-xxl {
+    min-width: 576px;
+}
+
+#navigation a {
+    color:#000000;
+    text-decoration: none;
+}
+
+#subnet_input #network {
+    flex-grow: 0;
+    flex-basis: 11rem;
+}
+#subnet_input #netsize {
+    flex-grow: 0;
+    flex-basis: 4rem;
+}
+
+
 #calc {
     vertical-align: middle;
 }

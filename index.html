@@ -9,155 +9,205 @@
     <link href="main.css" rel="stylesheet">
 </head>
 <body>
-<div class="container-xxl">
-<h1>Visual Subnet Calculator</h1>
+<div class="container-xxl mt-3">
+    <div class="float-end" id="navigation">
+        <a href="#" id="info_icon" data-bs-toggle="modal" data-bs-target="#aboutModal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+            </svg>
+        </a><a href="https://github.com/ckabalan/visualsubnetcalc" target="_blank">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+        </a>
+    </div>
+    <h1>Visual Subnet Calculator</h1>
+    <div class="alert alert-primary alert-dismissible show mt-3" role="alert">
+        Enter the network you wish to subnet and use the Split/Join buttons on the right to start designing!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 
-<table id="calc" class="table table-bordered font-monospace">
-    <thead>
-        <tr>
-            <th id="subnetHeader" style="display: table-cell;">Subnet address</th>
-            <th id="netmaskHeader" style="display: none;">Netmask</th>
-            <th id="rangeHeader" style="display: table-cell;">Range of addresses</th>
-            <th id="useableHeader" style="display: table-cell;">Useable IPs</th>
-            <th id="hostsHeader" style="display: table-cell;">Hosts</th>
-            <th id="noteHeader" style="display: table-cell;">Note</th>
-            <th id="joinHeader" colspan="14" style="display: table-cell;"><span class="split">Split</span>/<span class="join">Join</span></th>
-        </tr>
-    </thead>
-    <tbody id="calcbody">
-        <tr>
-            <td>10.0.0.0/17</td>
-            <td>10.0.0.0 - 10.0.127.255</td>
-            <td>10.0.0.1 - 10.0.127.254</td>
-            <td>32766</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="13" class="split rotate"><span>/17</span></td>
-            <td rowspan="14" colspan="1" class="join rotate"><span>/16</span></td>
-        </tr>
-        <tr>
-            <td>10.0.128.0/19</td>
-            <td>10.0.128.0 - 10.0.159.255</td>
-            <td>10.0.128.1 - 10.0.159.254</td>
-            <td>8190</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="11" class="split rotate"><span>/19</span></td>
-            <td rowspan="6" colspan="1" class="join rotate"><span>/18</span></td>
-            <td rowspan="13" colspan="1" class="join rotate"><span>/17</span></td>
-        </tr>
-        <tr>
-            <td>10.0.160.0/20</td>
-            <td>10.0.160.0 - 10.0.175.255</td>
-            <td>10.0.160.1 - 10.0.175.254</td>
-            <td>4094</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="10" class="split rotate"><span>/20</span></td>
-            <td rowspan="5" colspan="1" class="join rotate"><span>/19</span></td>
-        </tr>
-        <tr>
-            <td>10.0.176.0/23</td>
-            <td>10.0.176.0 - 10.0.177.255</td>
-            <td>10.0.176.1 - 10.0.177.254</td>
-            <td>510</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="7" class="split rotate"><span>/23</span></td>
-            <td rowspan="2" colspan="1" class="join rotate"><span>/22</span></td>
-            <td rowspan="3" colspan="1" class="join rotate"><span>/21</span></td>
-            <td rowspan="4" colspan="1" class="join rotate"><span>/20</span></td>
-        </tr>
-        <tr>
-            <td>10.0.178.0/23</td>
-            <td>10.0.178.0 - 10.0.179.255</td>
-            <td>10.0.178.1 - 10.0.179.254</td>
-            <td>510</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="7" class="split rotate"><span>/23</span></td>
-        </tr>
-        <tr>
-            <td>10.0.180.0/22</td>
-            <td>10.0.180.0 - 10.0.183.255</td>
-            <td>10.0.180.1 - 10.0.183.254</td>
-            <td>1022</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="8" class="split rotate"><span>/22</span></td>
-        </tr>
-        <tr>
-            <td>10.0.184.0/21</td>
-            <td>10.0.184.0 - 10.0.191.255</td>
-            <td>10.0.184.1 - 10.0.191.254</td>
-            <td>2046</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="9" class="split rotate"><span>/21</span></td>
-        </tr>
-        <tr>
-            <td>10.0.192.0/19</td>
-            <td>10.0.192.0 - 10.0.223.255</td>
-            <td>10.0.192.1 - 10.0.223.254</td>
-            <td>8190</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="11" class="split rotate"><span>/19</span></td>
-            <td rowspan="7" colspan="1" class="join rotate"><span>/18</span></td>
-        </tr>
-        <tr>
-            <td>10.0.224.0/20</td>
-            <td>10.0.224.0 - 10.0.239.255</td>
-            <td>10.0.224.1 - 10.0.239.254</td>
-            <td>4094</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="10" class="split rotate"><span>/20</span></td>
-            <td rowspan="6" colspan="1" class="join rotate"><span>/19</span></td>
-        </tr>
-        <tr>
-            <td>10.0.240.0/21</td>
-            <td>10.0.240.0 - 10.0.247.255</td>
-            <td>10.0.240.1 - 10.0.247.254</td>
-            <td>2046</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="9" class="split rotate"><span>/21</span></td>
-            <td rowspan="5" colspan="1" class="join rotate"><span>/20</span></td>
-        </tr>
-        <tr>
-            <td>10.0.248.0/22</td>
-            <td>10.0.248.0 - 10.0.251.255</td>
-            <td>10.0.248.1 - 10.0.251.254</td>
-            <td>1022</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="8" class="split rotate"><span>/22</span></td>
-            <td rowspan="4" colspan="1" class="join rotate"><span>/21</span></td>
-        </tr>
-        <tr>
-            <td>10.0.252.0/23</td>
-            <td>10.0.252.0 - 10.0.253.255</td>
-            <td>10.0.252.1 - 10.0.253.254</td>
-            <td>510</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="7" class="split rotate"><span>/23</span></td>
-            <td rowspan="3" colspan="1" class="join rotate"><span>/22</span></td>
-        </tr>
-        <tr>
-            <td>10.0.254.0/24</td>
-            <td>10.0.254.0 - 10.0.254.255</td>
-            <td>10.0.254.1 - 10.0.254.254</td>
-            <td>254</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="6" class="split rotate"><span>/24</span></td>
-            <td rowspan="2" colspan="1" class="join rotate"><span>/23</span></td>
-        </tr>
-        <tr>
-            <td>10.0.255.0/24</td>
-            <td>10.0.255.0 - 10.0.255.255</td>
-            <td>10.0.255.1 - 10.0.255.254</td>
-            <td>254</td>
-            <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-            <td rowspan="1" colspan="6" class="split rotate"><span>/24</span></td>
-        </tr>
-    </tbody>
-</table>
+    <div class="row font-monospace g-2 mb-3">
+        <div class="col-lg-2 col-md-3 col-4">
+            <div><label for="basic-url" class="form-label mb-0 ms-1">Network Address</label></div>
+            <div><input id="network" type="text" class="form-control" value="10.0.0.0" aria-label="Network Address"></div>
+        </div>
+        <div class="col-auto">
+            <div style="height:2rem"></div>
+            <div>/</div>
+        </div>
+        <div class="col-lg-2 col-md-3 col-4">
+            <div><label for="basic-url" class="form-label mb-0 ms-1">Network Size</label></div>
+            <div><input id="netsize" type="text" class="form-control w-10" value="16" aria-label="Network Size"></div>
+        </div>
+        <div class="col-lg-2 col-md-3 col-3">
+            <div style="height:1.5rem"></div>
+            <div>
+                <button class="btn btn-success mb-0 mt-auto" type="button">Go</button>
+                <button class="btn btn-danger mb-0 mt-auto" type="button">Reset</button>
+            </div>
+        </div>
+    </div>
 
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-        crossorigin="anonymous"></script>
-<script src="main.js"></script>
+    <table id="calc" class="table table-bordered font-monospace">
+        <thead>
+            <tr>
+                <th id="subnetHeader" style="display: table-cell;">Subnet address</th>
+                <th id="netmaskHeader" style="display: none;">Netmask</th>
+                <th id="rangeHeader" style="display: table-cell;">Range of addresses</th>
+                <th id="useableHeader" style="display: table-cell;">Useable IPs</th>
+                <th id="hostsHeader" style="display: table-cell;">Hosts</th>
+                <th id="noteHeader" style="display: table-cell;">Note</th>
+                <th id="joinHeader" colspan="14" style="display: table-cell;"><span class="split">Split</span>/<span class="join">Join</span></th>
+            </tr>
+        </thead>
+        <tbody id="calcbody">
+            <tr>
+                <td>10.0.0.0/17</td>
+                <td>10.0.0.0 - 10.0.127.255</td>
+                <td>10.0.0.1 - 10.0.127.254</td>
+                <td>32766</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="13" class="split rotate"><span>/17</span></td>
+                <td rowspan="14" colspan="1" class="join rotate"><span>/16</span></td>
+            </tr>
+            <tr>
+                <td>10.0.128.0/19</td>
+                <td>10.0.128.0 - 10.0.159.255</td>
+                <td>10.0.128.1 - 10.0.159.254</td>
+                <td>8190</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="11" class="split rotate"><span>/19</span></td>
+                <td rowspan="6" colspan="1" class="join rotate"><span>/18</span></td>
+                <td rowspan="13" colspan="1" class="join rotate"><span>/17</span></td>
+            </tr>
+            <tr>
+                <td>10.0.160.0/20</td>
+                <td>10.0.160.0 - 10.0.175.255</td>
+                <td>10.0.160.1 - 10.0.175.254</td>
+                <td>4094</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="10" class="split rotate"><span>/20</span></td>
+                <td rowspan="5" colspan="1" class="join rotate"><span>/19</span></td>
+            </tr>
+            <tr>
+                <td>10.0.176.0/23</td>
+                <td>10.0.176.0 - 10.0.177.255</td>
+                <td>10.0.176.1 - 10.0.177.254</td>
+                <td>510</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="7" class="split rotate"><span>/23</span></td>
+                <td rowspan="2" colspan="1" class="join rotate"><span>/22</span></td>
+                <td rowspan="3" colspan="1" class="join rotate"><span>/21</span></td>
+                <td rowspan="4" colspan="1" class="join rotate"><span>/20</span></td>
+            </tr>
+            <tr>
+                <td>10.0.178.0/23</td>
+                <td>10.0.178.0 - 10.0.179.255</td>
+                <td>10.0.178.1 - 10.0.179.254</td>
+                <td>510</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="7" class="split rotate"><span>/23</span></td>
+            </tr>
+            <tr>
+                <td>10.0.180.0/22</td>
+                <td>10.0.180.0 - 10.0.183.255</td>
+                <td>10.0.180.1 - 10.0.183.254</td>
+                <td>1022</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="8" class="split rotate"><span>/22</span></td>
+            </tr>
+            <tr>
+                <td>10.0.184.0/21</td>
+                <td>10.0.184.0 - 10.0.191.255</td>
+                <td>10.0.184.1 - 10.0.191.254</td>
+                <td>2046</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="9" class="split rotate"><span>/21</span></td>
+            </tr>
+            <tr>
+                <td>10.0.192.0/19</td>
+                <td>10.0.192.0 - 10.0.223.255</td>
+                <td>10.0.192.1 - 10.0.223.254</td>
+                <td>8190</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="11" class="split rotate"><span>/19</span></td>
+                <td rowspan="7" colspan="1" class="join rotate"><span>/18</span></td>
+            </tr>
+            <tr>
+                <td>10.0.224.0/20</td>
+                <td>10.0.224.0 - 10.0.239.255</td>
+                <td>10.0.224.1 - 10.0.239.254</td>
+                <td>4094</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="10" class="split rotate"><span>/20</span></td>
+                <td rowspan="6" colspan="1" class="join rotate"><span>/19</span></td>
+            </tr>
+            <tr>
+                <td>10.0.240.0/21</td>
+                <td>10.0.240.0 - 10.0.247.255</td>
+                <td>10.0.240.1 - 10.0.247.254</td>
+                <td>2046</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="9" class="split rotate"><span>/21</span></td>
+                <td rowspan="5" colspan="1" class="join rotate"><span>/20</span></td>
+            </tr>
+            <tr>
+                <td>10.0.248.0/22</td>
+                <td>10.0.248.0 - 10.0.251.255</td>
+                <td>10.0.248.1 - 10.0.251.254</td>
+                <td>1022</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="8" class="split rotate"><span>/22</span></td>
+                <td rowspan="4" colspan="1" class="join rotate"><span>/21</span></td>
+            </tr>
+            <tr>
+                <td>10.0.252.0/23</td>
+                <td>10.0.252.0 - 10.0.253.255</td>
+                <td>10.0.252.1 - 10.0.253.254</td>
+                <td>510</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="7" class="split rotate"><span>/23</span></td>
+                <td rowspan="3" colspan="1" class="join rotate"><span>/22</span></td>
+            </tr>
+            <tr>
+                <td>10.0.254.0/24</td>
+                <td>10.0.254.0 - 10.0.254.255</td>
+                <td>10.0.254.1 - 10.0.254.254</td>
+                <td>254</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="6" class="split rotate"><span>/24</span></td>
+                <td rowspan="2" colspan="1" class="join rotate"><span>/23</span></td>
+            </tr>
+            <tr>
+                <td>10.0.255.0/24</td>
+                <td>10.0.255.0 - 10.0.255.255</td>
+                <td>10.0.255.1 - 10.0.255.254</td>
+                <td>254</td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="6" class="split rotate"><span>/24</span></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="aboutModalLabel">About Visual Subnet Calculator</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Some stuff here that is basically on the README.
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+            crossorigin="anonymous"></script>
+    <script src="main.js"></script>
 </div>
 </body>
 </html>
