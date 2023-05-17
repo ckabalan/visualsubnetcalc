@@ -68,12 +68,13 @@ function addRowTree(subnetTree, depth, maxDepth) {
             addRowTree(subnetTree[mapKey], depth + 1, maxDepth)
         } else {
             let subnet_split = mapKey.split('/')
-            addRow(subnet_split[0], subnet_split[1], (infoColumnCount + maxDepth - depth), 0)
+            let max_children = get_join_children(subnetTree[mapKey], 0)
+            addRow(subnet_split[0], parseInt(subnet_split[1]), (infoColumnCount + maxDepth - depth), 0, max_children)
         }
     }
 }
 
-function addRow(network, netSize, colspan, rowspan) {
+function addRow(network, netSize, colspan, rowspan, joinChildren) {
     // TODO: do some checking here for smaller networks like /32, probably some edge cases to watch for.
     let addressFirst = ip2int(network)
     let addressLast = subnet_last_address(addressFirst, netSize)
@@ -89,8 +90,12 @@ function addRow(network, netSize, colspan, rowspan) {
         '                <td class="row_hosts">' + hostCount + '</td>\n' +
         '                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>\n' +
         '                <td rowspan="1" colspan="' + colspan + '" class="split rotate"><span>/' + netSize + '</span></td>\n'
-    if (netSize < maxNetSize) {
-        newRow += '                <td rowspan="14" colspan="1" class="join rotate"><span>/' + (netSize + 1) + '</span></td>\n'
+    if (netSize > maxNetSize) {
+        // This is wrong. Need to figure out a way to get the number of children so you can set rowspan and the number
+        // of ancestors so you can set colspan. If the subnet address (without the mask) matches a larger subnet address
+        // in the heirarchy that is a signal to add more join buttons to that row, since they start at the top row and
+        // via rowspan extend downward.
+        newRow += '                <td rowspan="' + joinChildren + '" colspan="1" class="join rotate"><span>/' + (netSize - 1) + '</span></td>\n'
     }
     newRow += '            </tr>';
 
@@ -124,4 +129,18 @@ function get_dict_max_depth(dict, curDepth) {
         if (newDepth > maxDepth) { maxDepth = newDepth }
     }
     return maxDepth
+}
+
+function get_join_ancestors() {
+
+}
+
+function get_join_children(subnetTree, childCount) {
+    for (let mapKey in subnetTree) {
+        if (Object.keys(subnetTree[mapKey]).length > 0) {
+            childCount += get_join_children(subnetTree[mapKey])
+        } else {
+            return childCount
+        }
+    }
 }
