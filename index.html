@@ -44,8 +44,8 @@
         <div class="col-lg-2 col-md-3 col-3">
             <div style="height:1.5rem"></div>
             <div>
-                <button class="btn btn-success mb-0 mt-auto" type="button">Go</button>
-                <button class="btn btn-danger mb-0 mt-auto" type="button">Reset</button>
+                <button id="btn_go" class="btn btn-success mb-0 mt-auto" type="button">Go</button>
+                <button id="btn_reset" class="btn btn-danger mb-0 mt-auto" type="button">Reset</button>
             </div>
         </div>
     </div>
@@ -64,130 +64,14 @@
             </tr>
         </thead>
         <tbody id="calcbody">
-            <tr>
-                <td>10.0.0.0/17</td>
-                <td>10.0.0.0 - 10.0.127.255</td>
-                <td>10.0.0.1 - 10.0.127.254</td>
-                <td>32766</td>
+            <tr id="row_10-0-0-0_17">
+                <td class="row_address">Loading...</td>
+                <td class="row_range"></td>
+                <td class="row_usable"></td>
+                <td class="row_hosts"></td>
                 <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="13" class="split rotate"><span>/17</span></td>
-                <td rowspan="14" colspan="1" class="join rotate"><span>/16</span></td>
-            </tr>
-            <tr>
-                <td>10.0.128.0/19</td>
-                <td>10.0.128.0 - 10.0.159.255</td>
-                <td>10.0.128.1 - 10.0.159.254</td>
-                <td>8190</td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="11" class="split rotate"><span>/19</span></td>
-                <td rowspan="6" colspan="1" class="join rotate"><span>/18</span></td>
-                <td rowspan="13" colspan="1" class="join rotate"><span>/17</span></td>
-            </tr>
-            <tr>
-                <td>10.0.160.0/20</td>
-                <td>10.0.160.0 - 10.0.175.255</td>
-                <td>10.0.160.1 - 10.0.175.254</td>
-                <td>4094</td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="10" class="split rotate"><span>/20</span></td>
-                <td rowspan="5" colspan="1" class="join rotate"><span>/19</span></td>
-            </tr>
-            <tr>
-                <td>10.0.176.0/23</td>
-                <td>10.0.176.0 - 10.0.177.255</td>
-                <td>10.0.176.1 - 10.0.177.254</td>
-                <td>510</td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="7" class="split rotate"><span>/23</span></td>
-                <td rowspan="2" colspan="1" class="join rotate"><span>/22</span></td>
-                <td rowspan="3" colspan="1" class="join rotate"><span>/21</span></td>
-                <td rowspan="4" colspan="1" class="join rotate"><span>/20</span></td>
-            </tr>
-            <tr>
-                <td>10.0.178.0/23</td>
-                <td>10.0.178.0 - 10.0.179.255</td>
-                <td>10.0.178.1 - 10.0.179.254</td>
-                <td>510</td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="7" class="split rotate"><span>/23</span></td>
-            </tr>
-            <tr>
-                <td>10.0.180.0/22</td>
-                <td>10.0.180.0 - 10.0.183.255</td>
-                <td>10.0.180.1 - 10.0.183.254</td>
-                <td>1022</td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="8" class="split rotate"><span>/22</span></td>
-            </tr>
-            <tr>
-                <td>10.0.184.0/21</td>
-                <td>10.0.184.0 - 10.0.191.255</td>
-                <td>10.0.184.1 - 10.0.191.254</td>
-                <td>2046</td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="9" class="split rotate"><span>/21</span></td>
-            </tr>
-            <tr>
-                <td>10.0.192.0/19</td>
-                <td>10.0.192.0 - 10.0.223.255</td>
-                <td>10.0.192.1 - 10.0.223.254</td>
-                <td>8190</td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="11" class="split rotate"><span>/19</span></td>
-                <td rowspan="7" colspan="1" class="join rotate"><span>/18</span></td>
-            </tr>
-            <tr>
-                <td>10.0.224.0/20</td>
-                <td>10.0.224.0 - 10.0.239.255</td>
-                <td>10.0.224.1 - 10.0.239.254</td>
-                <td>4094</td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="10" class="split rotate"><span>/20</span></td>
-                <td rowspan="6" colspan="1" class="join rotate"><span>/19</span></td>
-            </tr>
-            <tr>
-                <td>10.0.240.0/21</td>
-                <td>10.0.240.0 - 10.0.247.255</td>
-                <td>10.0.240.1 - 10.0.247.254</td>
-                <td>2046</td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="9" class="split rotate"><span>/21</span></td>
-                <td rowspan="5" colspan="1" class="join rotate"><span>/20</span></td>
-            </tr>
-            <tr>
-                <td>10.0.248.0/22</td>
-                <td>10.0.248.0 - 10.0.251.255</td>
-                <td>10.0.248.1 - 10.0.251.254</td>
-                <td>1022</td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="8" class="split rotate"><span>/22</span></td>
-                <td rowspan="4" colspan="1" class="join rotate"><span>/21</span></td>
-            </tr>
-            <tr>
-                <td>10.0.252.0/23</td>
-                <td>10.0.252.0 - 10.0.253.255</td>
-                <td>10.0.252.1 - 10.0.253.254</td>
-                <td>510</td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="7" class="split rotate"><span>/23</span></td>
-                <td rowspan="3" colspan="1" class="join rotate"><span>/22</span></td>
-            </tr>
-            <tr>
-                <td>10.0.254.0/24</td>
-                <td>10.0.254.0 - 10.0.254.255</td>
-                <td>10.0.254.1 - 10.0.254.254</td>
-                <td>254</td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="6" class="split rotate"><span>/24</span></td>
-                <td rowspan="2" colspan="1" class="join rotate"><span>/23</span></td>
-            </tr>
-            <tr>
-                <td>10.0.255.0/24</td>
-                <td>10.0.255.0 - 10.0.255.255</td>
-                <td>10.0.255.1 - 10.0.255.254</td>
-                <td>254</td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="6" class="split rotate"><span>/24</span></td>
+                <td rowspan="1" colspan="13" class="split rotate"><span></span></td>
+                <td rowspan="14" colspan="1" class="join rotate"><span></span></td>
             </tr>
         </tbody>
     </table>
@@ -206,6 +90,9 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+            crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+            integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
             crossorigin="anonymous"></script>
     <script src="main.js"></script>
 </div>

@@ -47,11 +47,13 @@
 #calc td.split {
     background-color: var(--split-background);
     color: var(--split-foreground);
+    cursor: pointer;
 }
 
 #calc td.join {
     background-color: var(--join-background);
     color: var(--join-foreground);
+    cursor: pointer;
 }
 
 #calc td.split, #calc td.join {
