@@ -23,7 +23,6 @@
     flex-basis: 4rem;
 }
 
-
 #calc {
     vertical-align: middle;
 }
@@ -34,6 +33,15 @@
     /* Equivalent to p-2 */
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
+}
+
+#joinHeader {
+    border:none;
+}
+
+#calc thead {
+    border-right-width: 1px;
+    border-bottom-width: 0px;
 }
 
 #calc span.split {
@@ -48,12 +56,14 @@
     background-color: var(--split-background);
     color: var(--split-foreground);
     cursor: pointer;
+    min-width: 2.3rem;
 }
 
 #calc td.join {
     background-color: var(--join-background);
     color: var(--join-foreground);
     cursor: pointer;
+    min-width: 2.3rem;
 }
 
 #calc td.split, #calc td.join {
