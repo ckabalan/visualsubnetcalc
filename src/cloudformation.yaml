@@ -1,0 +1,215 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Visual Subnet Calculator
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Naming
+        Parameters:
+          - DomainName
+    ParameterLabels:
+      DomainName:
+        default: Domain Name
+Parameters:
+  DomainName:
+    Type: String
+    Default: ''
+    Description: Domain Name for Route53 Hosted Zone and Static S3 Site
+Resources:
+  OriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: Visual Subnet Calculator Static Website Amazon CloudFront Identity
+  StaticWebsite:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub
+        - visualsubnetcalc-static-website-${Unique}
+        - Unique: !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref 'AWS::StackId' ] ] ] ]
+      AccessControl: Private
+      LoggingConfiguration:
+        DestinationBucketName: !Ref LoggingBucket
+        LogFilePrefix: s3-static-website/
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersionAfter7Days
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 7
+  StaticWebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Sub
+        - visualsubnetcalc-static-website-${Unique}
+        - Unique: !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref 'AWS::StackId' ] ] ] ]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Id: WebAccess
+        Statement:
+          - Sid: CloudFrontReadForGetBucketObjects
+            Principal:
+              AWS: !Sub 'arn:${AWS::Partition}:iam::cloudfront:user/CloudFront Origin Access Identity ${OriginAccessIdentity}'
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:GetObjectVersion
+            Resource: !Sub
+              - arn:${AWS::Partition}:s3:::visualsubnetcalc-static-website-${Unique}/*
+              - Unique: !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref 'AWS::StackId' ] ] ] ]
+          - Sid: DenyPlaintextAccess
+            Principal: '*'
+            Effect: Deny
+            Action: s3:*
+            Resource:
+              - !Sub
+                - arn:${AWS::Partition}:s3:::visualsubnetcalc-static-website-${Unique}
+                - Unique: !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref 'AWS::StackId' ] ] ] ]
+              - !Sub
+                - arn:${AWS::Partition}:s3:::visualsubnetcalc-static-website-${Unique}/*
+                - Unique: !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref 'AWS::StackId' ] ] ] ]
+            Condition:
+              Bool:
+                aws:SecureTransport: 'false'
+  LoggingBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub
+        - visualsubnetcalc-logging-${Unique}
+        - Unique: !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref 'AWS::StackId' ] ] ] ]
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersionAfter7Days
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 7
+  LoggingBucketBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    DependsOn: LoggingBucket
+    Properties:
+      Bucket: !Sub
+        - visualsubnetcalc-logging-${Unique}
+        - Unique: !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref 'AWS::StackId' ] ] ] ]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Id: WebAccess
+        Statement:
+          - Sid: S3ServerAccessLogsPolicy
+            Effect: Allow
+            Principal:
+              Service: logging.s3.amazonaws.com
+            Action:
+              - s3:PutObject
+            Resource: !Sub
+              - arn:${AWS::Partition}:s3:::visualsubnetcalc-logging-${Unique}/*
+              - Unique: !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref 'AWS::StackId' ] ] ] ]
+            Condition:
+              ArnEquals:
+                aws:SourceArn:
+                  - !Sub
+                    - arn:${AWS::Partition}:s3:::visualsubnetcalc-static-website-${Unique}
+                    - Unique: !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref 'AWS::StackId' ] ] ] ]
+              StringEquals:
+                aws:SourceAccount: !Ref 'AWS::AccountId'
+          - Sid: DenyPlaintextAccess
+            Principal: '*'
+            Effect: Deny
+            Action: s3:*
+            Resource:
+              - !Sub
+                - arn:${AWS::Partition}:s3:::visualsubnetcalc-logging-${Unique}
+                - Unique: !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref 'AWS::StackId' ] ] ] ]
+              - !Sub
+                - arn:${AWS::Partition}:s3:::visualsubnetcalc-logging-${Unique}/*
+                - Unique: !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref 'AWS::StackId' ] ] ] ]
+            Condition:
+              Bool:
+                aws:SecureTransport: 'false'
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      HostedZoneConfig:
+        Comment: !Sub 'VisualSubnetCalc'
+      Name: !Ref 'DomainName'
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref 'DomainName'
+      DomainValidationOptions:
+        - DomainName: !Ref 'DomainName'
+          HostedZoneId: !Ref 'HostedZone'
+      ValidationMethod: DNS
+      Tags:
+        - Key: Name
+          Value: !Sub 'VisualSubnetCalc'
+  CloudFrontAlias:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt 'CloudFront.DomainName'
+        HostedZoneId: Z2FDTNDATAQYW2
+      Comment: To CloudFront S3
+      HostedZoneId: !Ref 'HostedZone'
+      Name: !Sub '${DomainName}.'
+      Type: A
+  CloudFront:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: Visual Subnet Calculator Static Website
+        Aliases:
+          - !Ref 'DomainName'
+        Logging:
+          Bucket: !GetAtt LoggingBucket.DomainName
+          Prefix: cloudfront
+          IncludeCookies: true
+        DefaultCacheBehavior:
+          ForwardedValues:
+            QueryString: false
+          TargetOriginId: !Sub 'S3-Static-Website'
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+        DefaultRootObject: index.html
+        Enabled: true
+        HttpVersion: http2
+        Origins:
+          - DomainName: !Sub
+              - visualsubnetcalc-static-website-${Unique}.s3.${AWS::Region}.amazonaws.com
+              - Unique: !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref 'AWS::StackId' ] ] ] ]
+            Id: !Sub 'S3-Static-Website'
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${OriginAccessIdentity}'
+        PriceClass: PriceClass_100
+        IPV6Enabled: false
+        ViewerCertificate:
+          AcmCertificateArn: !Ref 'Certificate'
+          MinimumProtocolVersion: TLSv1.2_2021
+          SslSupportMethod: sni-only
