@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Visual Subnet Calculator</title>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <link href="main.css" rel="stylesheet">
+    <meta name="description" content="Quickly design and collaborate on network design. Visual Subnet Calculator focuses on expediting the work of network administrators, not academic subnetting math.">
+    <meta name="robots" content="index, follow" />
+</head>
+<body>
+<div class="container-xxl mt-3">
+    <div class="float-end" id="navigation">
+        <a href="#" id="info_icon" data-bs-toggle="modal" data-bs-target="#aboutModal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+            </svg>
+        </a><a href="https://github.com/ckabalan/visualsubnetcalc" target="_blank">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+        </a>
+    </div>
+    <h1>Visual Subnet Calculator <span style="font-size:1rem;">(UNDER CONSTRUCTION)</span></h1>
+    <div class="alert alert-primary alert-dismissible show mt-3" role="alert">
+        Enter the network you wish to subnet and use the Split/Join buttons on the right to start designing!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="row font-monospace g-2 mb-3">
+        <div class="col-lg-2 col-md-3 col-4">
+            <div><label for="basic-url" class="form-label mb-0 ms-1">Network Address</label></div>
+            <div><input id="network" type="text" class="form-control" value="10.0.0.0" aria-label="Network Address"></div>
+        </div>
+        <div class="col-auto">
+            <div style="height:2rem"></div>
+            <div>/</div>
+        </div>
+        <div class="col-lg-2 col-md-3 col-4">
+            <div><label for="basic-url" class="form-label mb-0 ms-1">Network Size</label></div>
+            <div><input id="netsize" type="text" class="form-control w-10" value="16" aria-label="Network Size"></div>
+        </div>
+        <div class="col-lg-2 col-md-3 col-3">
+            <div style="height:1.5rem"></div>
+            <div>
+                <button id="btn_go" class="btn btn-success mb-0 mt-auto" type="button">Go</button>
+                <button id="btn_reset" class="btn btn-danger mb-0 mt-auto" type="button">Reset</button>
+            </div>
+        </div>
+    </div>
+
+
+    <table id="calc" class="table table-bordered font-monospace">
+        <thead>
+            <tr>
+                <th id="subnetHeader" style="display: table-cell;">Subnet address</th>
+                <th id="netmaskHeader" style="display: none;">Netmask</th>
+                <th id="rangeHeader" style="display: table-cell;">Range of addresses</th>
+                <th id="useableHeader" style="display: table-cell;">Useable IPs</th>
+                <th id="hostsHeader" style="display: table-cell;">Hosts</th>
+                <th id="noteHeader" colspan="100%" style="display: table-cell;">
+                    Note
+                    <div style="display:inline-block; float:right;"><span class="split">Split</span>/<span class="join">Join</span></div>
+                </th>
+                <!--
+                <th id="joinHeader" colspan="100%" style="display: table-cell;"><span class="split">Split</span>/<span class="join">Join</span></th>
+                -->
+            </tr>
+        </thead>
+        <tbody id="calcbody">
+            <tr id="row_10-0-0-0_17">
+                <td class="row_address">Loading...</td>
+                <td class="row_range"></td>
+                <td class="row_usable"></td>
+                <td class="row_hosts"></td>
+                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td rowspan="1" colspan="13" class="split rotate"><span></span></td>
+                <td rowspan="14" colspan="1" class="join rotate"><span></span></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="aboutModalLabel">About Visual Subnet Calculator</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Visual Subnet Calculator strives to be a tool for quickly designing networks and collaborating on that design with others. It focuses on expediting the work of network administrators, not academic subnetting math.<br />
+                    <br/>
+                    <h4>Design Tenants</h4>
+                    <ul>
+                        <li><span style="font-weight:bold">Simplicity is king.</span> Network admins are busy and Visual Subnet Calculator should always be easy for FIRST TIME USERS to quickly and intuitively use.</li>
+                        <li><span style="font-weight:bold">Subnetting is design work.</span> Promote features that enhance visual clarity and easy mental processing of even the mostcomplex architectures.</li>
+                        <li><span style="font-weight:bold">Users control the data.</span> We store nothing, but provide convenient ways for users to save and share their designs.</li>
+                        <li><span style="font-weight:bold">Embrace community contributions.</span> Consider and respond to all feedback and pull requests in the context of these tenants.</li>
+                    </ul>
+                    <h4 class="mt-4">Credits</h4>
+                    Developed by <a href="https://www.caesarkabalan.com/" target="_blank">Caesar Kabalan</a> with help from <a href="https://github.com/ckabalan/visualsubnetcalc/graphs/contributors" target="_blank">GitHub Contributors</a>!<br/>
+                    <br/>
+                    Special thanks to <a href="https://www.davidc.net/" target="_blank">davidc</a> for the <a href="https://www.davidc.net/sites/default/subnets/subnets.html" target="_blank">original tool</a> this website is inspired by.<br/>
+                    <br/>
+                    All contributions, even suggestions or bug reports, are welcome at:<br/>
+                    <ul>
+                        <li>GitHub: <a href="https://github.com/ckabalan/visualsubnetcalc" target="_blank">https://github.com/ckabalan/visualsubnetcalc</a></li>
+                        <li>LinkedIn: <a href="https://www.linkedin.com/in/caesarkabalan/" target="_blank">Caesar Kabalan</a></li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+            crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+            integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+            crossorigin="anonymous"></script>
+    <script src="main.js"></script>
+</div>
+</body>
+</html>
