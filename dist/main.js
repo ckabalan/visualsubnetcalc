@@ -2,7 +2,15 @@ let subnetMap = {};
 let maxNetSize = 0;
 let infoColumnCount = 5
 $('#btn_go').on('click', function() {
-    let rootCidr = get_network($('#network').val(), $('#netsize').val()) + '/' + $('#netsize').val()
+    reset();
+})
+
+$('#btn_reset').on('click', function() {
+    reset();
+})
+
+function reset() {
+        let rootCidr = get_network($('#network').val(), $('#netsize').val()) + '/' + $('#netsize').val()
     subnetMap = {}
     subnetMap[rootCidr] = {}
     maxNetSize = parseInt($('#netsize').val())
@@ -51,7 +59,7 @@ $('#btn_go').on('click', function() {
     }
     */
     renderTable();
-})
+}
 
 $('#calcbody').on('click', 'td.split,td.join', function(event) {
     // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
@@ -216,3 +224,7 @@ function mutate_subnet_map(verb, network, subnetTree) {
         }
     }
 }
+
+$( document ).ready(function() {
+    reset();
+});
