@@ -2,10 +2,11 @@ let subnetMap = {};
 let maxNetSize = 0;
 let infoColumnCount = 5
 $('#btn_go').on('click', function() {
-    //subnetMap[$('#network').val()] = {
-    //    'netsize': parseInt($('#netsize').val())
-    //}
+    let rootCidr = get_network($('#network').val(), $('#netsize').val()) + '/' + $('#netsize').val()
+    subnetMap = {}
+    subnetMap[rootCidr] = {}
     maxNetSize = parseInt($('#netsize').val())
+    /*
     subnetMap = {
         '10.0.0.0/16': {
             '10.0.0.0/17': {},
@@ -48,11 +49,15 @@ $('#btn_go').on('click', function() {
             }
         }
     }
+    */
     renderTable();
 })
 
-$('#calcbody').on('click', 'td.split', function(event) {
-    console.log(event)
+$('#calcbody').on('click', 'td.split,td.join', function(event) {
+    // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
+    console.log(this.dataset.subnet)
+    mutate_subnet_map(this.dataset.mutateVerb, this.dataset.subnet, subnetMap)
+    renderTable();
 })
 
 function renderTable() {
@@ -88,7 +93,7 @@ function addRow(network, netSize, colspan) {
         '                <td class="row_usable">' + int2ip(usableFirst) + ' - ' + int2ip(usableLast) + '</td>\n' +
         '                <td class="row_hosts">' + hostCount + '</td>\n' +
         '                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>\n' +
-        '                <td rowspan="1" colspan="' + colspan + '" class="split rotate"><span>/' + netSize + '</span></td>\n'
+        '                <td rowspan="1" colspan="' + colspan + '" class="split rotate" data-subnet="' + network + '/' + netSize + '" data-mutate-verb="split"><span>/' + netSize + '</span></td>\n'
     if (netSize > maxNetSize) {
         // This is wrong. Need to figure out a way to get the number of children so you can set rowspan and the number
         // of ancestors so you can set colspan.
@@ -99,7 +104,7 @@ function addRow(network, netSize, colspan) {
         for (const i in matchingNetworkList) {
             let matchingNetwork = matchingNetworkList[i]
             let networkChildrenCount = count_network_children(matchingNetwork, subnetMap, [])
-            newRow += '                <td rowspan="' + networkChildrenCount + '" colspan="1" class="join rotate"><span>/' + matchingNetwork.split('/')[1] + '</span></td>\n'
+            newRow += '                <td rowspan="' + networkChildrenCount + '" colspan="1" class="join rotate" data-subnet="' + matchingNetwork + '" data-mutate-verb="join"><span>/' + matchingNetwork.split('/')[1] + '</span></td>\n'
         }
     }
     newRow += '            </tr>';
@@ -174,4 +179,40 @@ function get_matching_network_list(network, subnetTree) {
         }
     }
     return subnetList
+}
+
+function get_network(networkInput, netSize) {
+    let ipInt = ip2int(networkInput)
+    netSize = parseInt(netSize)
+    for (let i=31-netSize; i>=0; i--) {
+        ipInt &= ~ 1<<i;
+    }
+    return int2ip(ipInt);
+}
+
+function split_network(networkInput, netSize) {
+    let subnets = [networkInput + '/' + (netSize + 1)]
+    let newSubnet = ip2int(networkInput) + 2**(32-netSize-1);
+    subnets.push(int2ip(newSubnet) + '/' + (netSize + 1))
+    return subnets;
+}
+
+function mutate_subnet_map(verb, network, subnetTree) {
+    for (let mapKey in subnetTree) {
+        if (Object.keys(subnetTree[mapKey]).length > 0) {
+            mutate_subnet_map(verb, network, subnetTree[mapKey])
+        }
+        if (mapKey === network) {
+            if (verb === 'split') {
+                let netSplit = mapKey.split('/')
+                let new_networks = split_network(netSplit[0], parseInt(netSplit[1]))
+                subnetTree[mapKey][new_networks[0]] = {}
+                subnetTree[mapKey][new_networks[1]] = {}
+            } else if (verb === 'join') {
+                subnetTree[mapKey] = {}
+            } else {
+                // How did you get here?
+            }
+        }
+    }
 }
