@@ -68,13 +68,12 @@ function addRowTree(subnetTree, depth, maxDepth) {
             addRowTree(subnetTree[mapKey], depth + 1, maxDepth)
         } else {
             let subnet_split = mapKey.split('/')
-            let max_children = get_join_children(subnetTree[mapKey], 0)
-            addRow(subnet_split[0], parseInt(subnet_split[1]), (infoColumnCount + maxDepth - depth), 0, max_children)
+            addRow(subnet_split[0], parseInt(subnet_split[1]), (infoColumnCount + maxDepth - depth))
         }
     }
 }
 
-function addRow(network, netSize, colspan, rowspan, joinChildren) {
+function addRow(network, netSize, colspan) {
     // TODO: do some checking here for smaller networks like /32, probably some edge cases to watch for.
     let addressFirst = ip2int(network)
     let addressLast = subnet_last_address(addressFirst, netSize)
@@ -92,10 +91,16 @@ function addRow(network, netSize, colspan, rowspan, joinChildren) {
         '                <td rowspan="1" colspan="' + colspan + '" class="split rotate"><span>/' + netSize + '</span></td>\n'
     if (netSize > maxNetSize) {
         // This is wrong. Need to figure out a way to get the number of children so you can set rowspan and the number
-        // of ancestors so you can set colspan. If the subnet address (without the mask) matches a larger subnet address
+        // of ancestors so you can set colspan.
+        // DONE: If the subnet address (without the mask) matches a larger subnet address
         // in the heirarchy that is a signal to add more join buttons to that row, since they start at the top row and
         // via rowspan extend downward.
-        newRow += '                <td rowspan="' + joinChildren + '" colspan="1" class="join rotate"><span>/' + (netSize - 1) + '</span></td>\n'
+        let matchingNetworkList = get_matching_network_list(network, subnetMap).slice(1)
+        for (const i in matchingNetworkList) {
+            let matchingNetwork = matchingNetworkList[i]
+            let networkChildrenCount = count_network_children(matchingNetwork, subnetMap, [])
+            newRow += '                <td rowspan="' + networkChildrenCount + '" colspan="1" class="join rotate"><span>/' + matchingNetwork.split('/')[1] + '</span></td>\n'
+        }
     }
     newRow += '            </tr>';
 
@@ -131,9 +136,6 @@ function get_dict_max_depth(dict, curDepth) {
     return maxDepth
 }
 
-function get_join_ancestors() {
-
-}
 
 function get_join_children(subnetTree, childCount) {
     for (let mapKey in subnetTree) {
@@ -143,4 +145,33 @@ function get_join_children(subnetTree, childCount) {
             return childCount
         }
     }
+}
+
+function count_network_children(network, subnetTree, ancestryList) {
+    // TODO: This might be able to be optimized. Ultimately it needs to count the number of keys underneath
+    // the current key are unsplit networks (IE rows in the table, IE keys with a value of {}).
+    let childCount = 0
+    for (let mapKey in subnetTree) {
+        if (Object.keys(subnetTree[mapKey]).length > 0) {
+            childCount += count_network_children(network, subnetTree[mapKey], ancestryList.concat([mapKey]))
+        } else {
+            if (ancestryList.includes(network)) {
+                childCount += 1
+            }
+        }
+    }
+    return childCount
+}
+
+function get_matching_network_list(network, subnetTree) {
+    let subnetList = []
+    for (let mapKey in subnetTree) {
+        if (Object.keys(subnetTree[mapKey]).length > 0) {
+            subnetList.push.apply(subnetList, get_matching_network_list(network, subnetTree[mapKey]))
+        }
+        if (mapKey.split('/')[0] === network) {
+            subnetList.push(mapKey)
+        }
+    }
+    return subnetList
 }
