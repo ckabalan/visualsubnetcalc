@@ -17,6 +17,29 @@ should align to these tenants, or propose an adjustment to the tenants.
 - **Embrace community contributions.** Consider and respond to all feedback and pull requests in the context of these 
   tenants. 
 
+## Building From Source
+
+If you have a more opinionated best-practice way to lay out this repository please open an issue.
+
+Build prerequisites:
+- npm
+- sass
+
+Compile from source:
+
+```shell
+# Clone the repository
+> git clone https://github.com/ckabalan/visualsubnetcalc
+# Change to the sources directory
+> cd visualsubnetcalc/src
+# Install Bootstrap
+> npm install
+# Compile Bootstrap
+> sass --style compressed scss/custom.scss:../dist/bootstrap.min.css
+```
+
+The full application should then be available within `./dist/`, open `./dist/index.html` in a browser.
+
 ## License
 
 Visual Subnet Calculator is released under the [MIT License](https://opensource.org/licenses/MIT)

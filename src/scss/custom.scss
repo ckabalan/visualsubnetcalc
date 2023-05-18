@@ -1,0 +1,21 @@
+@import '../node_modules/bootstrap/scss/functions';
+
+@import '../node_modules/bootstrap/scss/variables';
+
+$new-breakpoints: (
+        xxxl:1600px,
+        xxxxl:1800px,
+        //xxxxx:2000px,
+);
+
+$grid-breakpoints: map-merge($grid-breakpoints, $new-breakpoints);
+
+$new-container-max-widths: (
+        xxxl:1520px,
+        xxxxl:1720px,
+        //xxxxxl:1920px
+);
+
+$container-max-widths: map-merge($container-max-widths, $new-container-max-widths);
+
+@import "../node_modules/bootstrap/scss/bootstrap";
