@@ -1,4 +1,5 @@
 let subnetMap = {};
+let subnetNotes = {};
 let maxNetSize = 0;
 let infoColumnCount = 5
 // NORMAL mode:
@@ -15,6 +16,7 @@ let infoColumnCount = 5
 //     - AWS Reserved - Future Use
 //     - Broadcast Address (last network address)
 let operatingMode = 'NORMAL'
+let noteTimeout;
 
 $('input#network,input#netsize').on('input', function() {
     $('#input_form')[0].classList.add('was-validated');
@@ -92,6 +94,17 @@ $('#calcbody').on('click', 'td.split,td.join', function(event) {
     renderTable();
 })
 
+$('#calcbody').on('keyup', 'td.note input', function(event) {
+    // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
+    let delay = 1000;
+    clearTimeout(noteTimeout);
+    noteTimeout = setTimeout(function(element) {
+        console.log('CAP')
+        subnetNotes[element.dataset.subnet] = element.value
+    }, delay, this);
+})
+
+
 function renderTable() {
     // TODO: Validation Code
     $('#calcbody').empty();
@@ -124,7 +137,7 @@ function addRow(network, netSize, colspan) {
         '                <td class="row_range">' + int2ip(addressFirst) + ' - ' + int2ip(addressLast) + '</td>\n' +
         '                <td class="row_usable">' + int2ip(usableFirst) + ' - ' + int2ip(usableLast) + '</td>\n' +
         '                <td class="row_hosts">' + hostCount + '</td>\n' +
-        '                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>\n' +
+        '                <td class="note"><label><input type="text" class="form-control shadow-none p-0" data-subnet="' + network + '/' + netSize + '" value="' + (subnetNotes[network + '/' + netSize] || '') + '"></label></td>\n' +
         '                <td rowspan="1" colspan="' + colspan + '" class="split rotate" data-subnet="' + network + '/' + netSize + '" data-mutate-verb="split"><span>/' + netSize + '</span></td>\n'
     if (netSize > maxNetSize) {
         // This is wrong. Need to figure out a way to get the number of children so you can set rowspan and the number
@@ -228,6 +241,7 @@ function split_network(networkInput, netSize) {
 }
 
 function mutate_subnet_map(verb, network, subnetTree) {
+    // TODO: Decide what to do with subnetNotes when you join/split a subnet with notes
     for (let mapKey in subnetTree) {
         if (Object.keys(subnetTree[mapKey]).length > 0) {
             mutate_subnet_map(verb, network, subnetTree[mapKey])
