@@ -104,6 +104,13 @@ $('#calcbody').on('keyup', 'td.note input', function(event) {
     }, delay, this);
 })
 
+$('#calcbody').on('focusout', 'td.note input', function(event) {
+    // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
+    clearTimeout(noteTimeout);
+    console.log('CAP')
+    subnetNotes[this.dataset.subnet] = this.value
+})
+
 
 function renderTable() {
     // TODO: Validation Code
@@ -241,7 +248,6 @@ function split_network(networkInput, netSize) {
 }
 
 function mutate_subnet_map(verb, network, subnetTree) {
-    // TODO: Decide what to do with subnetNotes when you join/split a subnet with notes
     for (let mapKey in subnetTree) {
         if (Object.keys(subnetTree[mapKey]).length > 0) {
             mutate_subnet_map(verb, network, subnetTree[mapKey])
@@ -258,8 +264,17 @@ function mutate_subnet_map(verb, network, subnetTree) {
                     let new_networks = split_network(netSplit[0], parseInt(netSplit[1]))
                     subnetTree[mapKey][new_networks[0]] = {}
                     subnetTree[mapKey][new_networks[1]] = {}
+                    // Copy note to both children and delete Delete parent note
+                    subnetNotes[new_networks[0]] = subnetNotes[mapKey]
+                    subnetNotes[new_networks[1]] = subnetNotes[mapKey]
+                    delete subnetNotes[mapKey]
                 }
             } else if (verb === 'join') {
+                // Keep the note of the first subnet (which matches the network address) and lose the second subnet's note
+                // Could consider changing this to concatenate the notes into the parent, but I think this is more intuitive
+                subnetNotes[mapKey] = subnetNotes[Object.keys(subnetTree[mapKey])[0]]
+                subnetNotes[Object.keys(subnetTree[mapKey])[0]] = ''
+                subnetNotes[Object.keys(subnetTree[mapKey])[1]] = ''
                 subnetTree[mapKey] = {}
             } else {
                 // How did you get here?
