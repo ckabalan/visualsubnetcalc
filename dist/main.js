@@ -1,6 +1,20 @@
 let subnetMap = {};
 let maxNetSize = 0;
 let infoColumnCount = 5
+// NORMAL mode:
+//   - Smallest subnet: /30
+//   - Two reserved addresses per subnet:
+//     - Network Address (network + 0)
+//     - Broadcast Address (last network address)
+// AWS mode (future):
+//   - Smallest subnet: /28
+//   - Two reserved addresses per subnet:
+//     - Network Address (network + 0)
+//     - AWS Reserved - VPC Router
+//     - AWS Reserved - VPC DNS
+//     - AWS Reserved - Future Use
+//     - Broadcast Address (last network address)
+let operatingMode = 'NORMAL'
 
 $('input#network,input#netsize').on('input', function() {
     $('#input_form')[0].classList.add('was-validated');
@@ -221,9 +235,16 @@ function mutate_subnet_map(verb, network, subnetTree) {
         if (mapKey === network) {
             if (verb === 'split') {
                 let netSplit = mapKey.split('/')
-                let new_networks = split_network(netSplit[0], parseInt(netSplit[1]))
-                subnetTree[mapKey][new_networks[0]] = {}
-                subnetTree[mapKey][new_networks[1]] = {}
+                // operatingMode NORMAL
+                let minSubnetSize = 30
+                if (operatingMode === 'AWS') {
+                    minSubnetSize = 28
+                }
+                if (parseInt(netSplit[1]) < minSubnetSize) {
+                    let new_networks = split_network(netSplit[0], parseInt(netSplit[1]))
+                    subnetTree[mapKey][new_networks[0]] = {}
+                    subnetTree[mapKey][new_networks[1]] = {}
+                }
             } else if (verb === 'join') {
                 subnetTree[mapKey] = {}
             } else {
