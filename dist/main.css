@@ -62,6 +62,10 @@
     font-size:1rem;
 }
 
+#notifyModal .modal-content {
+    background-color: var(--bs-alert-bg);
+}
+
 #calc td.join {
     background-color: var(--join-background);
     color: var(--join-foreground);

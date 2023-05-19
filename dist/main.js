@@ -1,6 +1,27 @@
 let subnetMap = {};
+let subnetNotes = {};
 let maxNetSize = 0;
 let infoColumnCount = 5
+// NORMAL mode:
+//   - Smallest subnet: /30
+//   - Two reserved addresses per subnet:
+//     - Network Address (network + 0)
+//     - Broadcast Address (last network address)
+// AWS mode (future):
+//   - Smallest subnet: /28
+//   - Two reserved addresses per subnet:
+//     - Network Address (network + 0)
+//     - AWS Reserved - VPC Router
+//     - AWS Reserved - VPC DNS
+//     - AWS Reserved - Future Use
+//     - Broadcast Address (last network address)
+let operatingMode = 'NORMAL'
+let noteTimeout;
+
+$('input#network,input#netsize').on('input', function() {
+    $('#input_form')[0].classList.add('was-validated');
+})
+
 $('#btn_go').on('click', function() {
     reset();
 })
@@ -10,7 +31,13 @@ $('#btn_reset').on('click', function() {
 })
 
 function reset() {
-        let rootCidr = get_network($('#network').val(), $('#netsize').val()) + '/' + $('#netsize').val()
+    let cidrInput = $('#network').val() + '/' + $('#netsize').val()
+    let rootNetwork = get_network($('#network').val(), $('#netsize').val())
+    let rootCidr = rootNetwork + '/' + $('#netsize').val()
+    if (cidrInput !== rootCidr) {
+        show_warning_modal('<div>Your network input is not on a network boundary for this network size. It has been automatically changed:</div><div class="font-monospace pt-2">' + $('#network').val() + ' -> ' + rootNetwork + '</div>')
+    }
+    $('#network').val(rootNetwork)
     subnetMap = {}
     subnetMap[rootCidr] = {}
     maxNetSize = parseInt($('#netsize').val())
@@ -63,10 +90,27 @@ function reset() {
 
 $('#calcbody').on('click', 'td.split,td.join', function(event) {
     // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
-    console.log(this.dataset.subnet)
     mutate_subnet_map(this.dataset.mutateVerb, this.dataset.subnet, subnetMap)
     renderTable();
 })
+
+$('#calcbody').on('keyup', 'td.note input', function(event) {
+    // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
+    let delay = 1000;
+    clearTimeout(noteTimeout);
+    noteTimeout = setTimeout(function(element) {
+        console.log('CAP')
+        subnetNotes[element.dataset.subnet] = element.value
+    }, delay, this);
+})
+
+$('#calcbody').on('focusout', 'td.note input', function(event) {
+    // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
+    clearTimeout(noteTimeout);
+    console.log('CAP')
+    subnetNotes[this.dataset.subnet] = this.value
+})
+
 
 function renderTable() {
     // TODO: Validation Code
@@ -100,7 +144,7 @@ function addRow(network, netSize, colspan) {
         '                <td class="row_range">' + int2ip(addressFirst) + ' - ' + int2ip(addressLast) + '</td>\n' +
         '                <td class="row_usable">' + int2ip(usableFirst) + ' - ' + int2ip(usableLast) + '</td>\n' +
         '                <td class="row_hosts">' + hostCount + '</td>\n' +
-        '                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>\n' +
+        '                <td class="note"><label><input type="text" class="form-control shadow-none p-0" data-subnet="' + network + '/' + netSize + '" value="' + (subnetNotes[network + '/' + netSize] || '') + '"></label></td>\n' +
         '                <td rowspan="1" colspan="' + colspan + '" class="split rotate" data-subnet="' + network + '/' + netSize + '" data-mutate-verb="split"><span>/' + netSize + '</span></td>\n'
     if (netSize > maxNetSize) {
         // This is wrong. Need to figure out a way to get the number of children so you can set rowspan and the number
@@ -118,8 +162,6 @@ function addRow(network, netSize, colspan) {
     newRow += '            </tr>';
 
     $('#calcbody').append(newRow)
-    console.log(network)
-    console.log(netSize)
 }
 
 
@@ -213,16 +255,89 @@ function mutate_subnet_map(verb, network, subnetTree) {
         if (mapKey === network) {
             if (verb === 'split') {
                 let netSplit = mapKey.split('/')
-                let new_networks = split_network(netSplit[0], parseInt(netSplit[1]))
-                subnetTree[mapKey][new_networks[0]] = {}
-                subnetTree[mapKey][new_networks[1]] = {}
+                // operatingMode NORMAL
+                let minSubnetSize = 30
+                if (operatingMode === 'AWS') {
+                    minSubnetSize = 28
+                }
+                if (parseInt(netSplit[1]) < minSubnetSize) {
+                    let new_networks = split_network(netSplit[0], parseInt(netSplit[1]))
+                    subnetTree[mapKey][new_networks[0]] = {}
+                    subnetTree[mapKey][new_networks[1]] = {}
+                    // Copy note to both children and delete Delete parent note
+                    subnetNotes[new_networks[0]] = subnetNotes[mapKey]
+                    subnetNotes[new_networks[1]] = subnetNotes[mapKey]
+                    delete subnetNotes[mapKey]
+                }
             } else if (verb === 'join') {
+                // Keep the note of the first subnet (which matches the network address) and lose the second subnet's note
+                // Could consider changing this to concatenate the notes into the parent, but I think this is more intuitive
+                subnetNotes[mapKey] = subnetNotes[Object.keys(subnetTree[mapKey])[0]]
+                subnetNotes[Object.keys(subnetTree[mapKey])[0]] = ''
+                subnetNotes[Object.keys(subnetTree[mapKey])[1]] = ''
                 subnetTree[mapKey] = {}
             } else {
                 // How did you get here?
             }
         }
     }
+}
+/*
+function validate_cidr(network, netSize) {
+    let returnObj = {
+        'valid': false,
+        'errorNetwork': true,
+        'errorSize': true,
+        'cidr': false,
+        'network': false,
+        'netSize': false
+    }
+    returnObj['network'] = validate_network(network)
+    if (returnObj['network']) {
+        returnObj['errorNetwork'] = false;
+    }
+    if (!/^\d+$/.test(netSize)) {
+        returnObj['errorSize'] = true;
+    } else {
+        netSize = parseInt(netSize)
+        if ((netSize > 32) || (netSize < 0)) {
+            returnObj['errorSize'] = true;
+        } else {
+            returnObj['errorSize'] = false;
+            returnObj['netSize'] = netSize.toString()
+        }
+    }
+    if ((returnObj['errorNetwork'] === false) && (returnObj['errorSize'] === false)) {
+        returnObj['cidr'] = returnObj['network'] + '/' + returnObj['netSize']
+        returnObj['valid'] = true
+    }
+    return returnObj;
+}
+
+function validate_network(network) {
+    // This can probably be done with Regex but this is better.
+    let octets = network.split('.');
+    if (octets.length !== 4) { return false }
+    if (!/^\d+$/.test(octets[0])) { return false }
+    if (!/^\d+$/.test(octets[1])) { return false }
+    if (!/^\d+$/.test(octets[2])) { return false }
+    if (!/^\d+$/.test(octets[3])) { return false }
+    octets[0] = parseInt(octets[0])
+    octets[1] = parseInt(octets[1])
+    octets[2] = parseInt(octets[2])
+    octets[3] = parseInt(octets[3])
+    if ((octets[0] < 0) || (octets[0] > 255)) { return false }
+    if ((octets[1] < 0) || (octets[1] > 255)) { return false }
+    if ((octets[2] < 0) || (octets[2] > 255)) { return false }
+    if ((octets[3] < 0) || (octets[3] > 255)) { return false }
+    return octets.join('.')
+}
+*/
+
+function show_warning_modal(message) {
+    var notifyModal = new bootstrap.Modal(document.getElementById("notifyModal"), {});
+    $('#notifyModal .modal-body').html(message)
+    notifyModal.show()
 }
 
 $( document ).ready(function() {
