@@ -24,23 +24,23 @@
         </a>
     </div>
     <h1>Visual Subnet Calculator <span style="font-size:1rem;">(UNDER CONSTRUCTION)</span></h1>
-    <div class="alert alert-primary alert-dismissible show mt-3" role="alert">
+    <div class="alert alert-primary  alert-dismissible show mt-3" role="alert">
         Enter the network you wish to subnet and use the Split/Join buttons on the right to start designing!
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <div class="row font-monospace g-2 mb-3">
+    <form id="input_form" class="row font-monospace g-2 mb-3" novalidate>
         <div class="col-lg-2 col-md-3 col-4">
-            <div><label for="basic-url" class="form-label mb-0 ms-1">Network Address</label></div>
-            <div><input id="network" type="text" class="form-control" value="10.0.0.0" aria-label="Network Address"></div>
+            <div><label for="network" class="form-label mb-0 ms-1">Network Address</label></div>
+            <div><input id="network" type="text" class="form-control" value="10.0.0.0" aria-label="Network Address" pattern="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" required></div>
         </div>
         <div class="col-auto">
             <div style="height:2rem"></div>
             <div>/</div>
         </div>
         <div class="col-lg-2 col-md-3 col-4">
-            <div><label for="basic-url" class="form-label mb-0 ms-1">Network Size</label></div>
-            <div><input id="netsize" type="text" class="form-control w-10" value="16" aria-label="Network Size"></div>
+            <div><label for="netsize" class="form-label mb-0 ms-1">Network Size</label></div>
+            <div><input id="netsize" type="text" class="form-control w-10" value="16" aria-label="Network Size" pattern="^(\d|[12]\d|3[0-2])$" required></div>
         </div>
         <div class="col-lg-2 col-md-3 col-3">
             <div style="height:1.5rem"></div>
@@ -49,7 +49,7 @@
                 <button id="btn_reset" class="btn btn-danger mb-0 mt-auto" type="button">Reset</button>
             </div>
         </div>
-    </div>
+    </form>
 
 
     <table id="calc" class="table table-bordered font-monospace">
@@ -81,6 +81,22 @@
             </tr>
         </tbody>
     </table>
+
+    <div class="modal fade" id="notifyModal" tabindex="-1" aria-labelledby="notifyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content alert-warning">
+                <div class="modal-header border-bottom-0 pb-1">
+                    <h3 class="modal-title" id="notifyModalLabel">Warning!</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-1">
+                    Notification Text Here
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
