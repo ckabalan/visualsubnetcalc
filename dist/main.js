@@ -17,6 +17,7 @@ let infoColumnCount = 5
 //     - Broadcast Address (last network address)
 let operatingMode = 'NORMAL'
 let noteTimeout;
+let minSubnetSize = 30
 
 $('input#network,input#netsize').on('input', function() {
     $('#input_form')[0].classList.add('was-validated');
@@ -31,6 +32,11 @@ $('#btn_reset').on('click', function() {
 })
 
 function reset() {
+    if (operatingMode === 'AWS') {
+        minSubnetSize = 28
+    } else {
+        minSubnetSize = 30
+    }
     let cidrInput = $('#network').val() + '/' + $('#netsize').val()
     let rootNetwork = get_network($('#network').val(), $('#netsize').val())
     let rootCidr = rootNetwork + '/' + $('#netsize').val()
@@ -218,6 +224,20 @@ function count_network_children(network, subnetTree, ancestryList) {
     return childCount
 }
 
+function get_network_children(network, subnetTree) {
+    // TODO: This might be able to be optimized. Ultimately it needs to count the number of keys underneath
+    // the current key are unsplit networks (IE rows in the table, IE keys with a value of {}).
+    let subnetList = []
+    for (let mapKey in subnetTree) {
+        if (Object.keys(subnetTree[mapKey]).length > 0) {
+            subnetList.push.apply(subnetList, get_network_children(network, subnetTree[mapKey]))
+        } else {
+            subnetList.push(mapKey)
+        }
+    }
+    return subnetList
+}
+
 function get_matching_network_list(network, subnetTree) {
     let subnetList = []
     for (let mapKey in subnetTree) {
@@ -253,15 +273,11 @@ function mutate_subnet_map(verb, network, subnetTree) {
             mutate_subnet_map(verb, network, subnetTree[mapKey])
         }
         if (mapKey === network) {
+            let netSplit = mapKey.split('/')
+            let netSize = parseInt(netSplit[1])
             if (verb === 'split') {
-                let netSplit = mapKey.split('/')
-                // operatingMode NORMAL
-                let minSubnetSize = 30
-                if (operatingMode === 'AWS') {
-                    minSubnetSize = 28
-                }
-                if (parseInt(netSplit[1]) < minSubnetSize) {
-                    let new_networks = split_network(netSplit[0], parseInt(netSplit[1]))
+                if (netSize < minSubnetSize) {
+                    let new_networks = split_network(netSplit[0], netSize)
                     subnetTree[mapKey][new_networks[0]] = {}
                     subnetTree[mapKey][new_networks[1]] = {}
                     // Copy note to both children and delete Delete parent note
@@ -272,9 +288,22 @@ function mutate_subnet_map(verb, network, subnetTree) {
             } else if (verb === 'join') {
                 // Keep the note of the first subnet (which matches the network address) and lose the second subnet's note
                 // Could consider changing this to concatenate the notes into the parent, but I think this is more intuitive
-                subnetNotes[mapKey] = subnetNotes[Object.keys(subnetTree[mapKey])[0]]
-                subnetNotes[Object.keys(subnetTree[mapKey])[0]] = ''
-                subnetNotes[Object.keys(subnetTree[mapKey])[1]] = ''
+                // Find first (smallest) subnet note which matches the exact network address (this would be the top network in the join scope)
+                let smallestMatchingNetworkSize = 0
+                for (let subnetCidr in subnetNotes) {
+                    if (subnetCidr.startsWith(netSplit[0])) {
+                        if (parseInt(subnetCidr.split('/')[1]) > smallestMatchingNetworkSize) {
+                            smallestMatchingNetworkSize = subnetCidr.split('/')[1]
+                        }
+                    }
+                }
+                subnetNotes[mapKey] = subnetNotes[netSplit[0] + '/' + smallestMatchingNetworkSize]
+                // Delete all notes of subnets under this collapsed subnet
+                let removeKeys = get_network_children(mapKey, subnetTree[mapKey], [])
+                for (let removeKey in removeKeys) {
+                    subnetNotes[removeKey] = ''
+                }
+                // And delete the subnets themselves
                 subnetTree[mapKey] = {}
             } else {
                 // How did you get here?
