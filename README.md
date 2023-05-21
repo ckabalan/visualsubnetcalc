@@ -17,7 +17,7 @@ should align to these tenants, or propose an adjustment to the tenants.
   complex architectures.
 - **Users control the data.** We store nothing, but provide convenient ways for users to save and share their designs.
 - **Embrace community contributions.** Consider and respond to all feedback and pull requests in the context of these 
-  tenants. 
+  tenants.
 
 ## Building From Source
 
@@ -41,6 +41,10 @@ Compile from source:
 ```
 
 The full application should then be available within `./dist/`, open `./dist/index.html` in a browser.
+
+## Credits
+
+Split icon made by [Freepik](https://www.flaticon.com/authors/freepik) from [Flaticon](https://www.flaticon.com/).
 
 ## License
 
