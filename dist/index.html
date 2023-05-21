@@ -36,24 +36,31 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <form id="input_form" class="row font-monospace g-2 mb-3" novalidate>
-        <div class="col-lg-2 col-md-3 col-4">
+    <form id="input_form" class="row g-2 mb-3" novalidate>
+        <div class="font-monospace col-lg-2 col-md-3 col-4">
             <div><label for="network" class="form-label mb-0 ms-1">Network Address</label></div>
             <div><input id="network" type="text" class="form-control" value="10.0.0.0" aria-label="Network Address" pattern="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" required></div>
         </div>
-        <div class="col-auto">
+        <div class="font-monospace col-auto">
             <div style="height:2rem"></div>
             <div>/</div>
         </div>
-        <div class="col-lg-2 col-md-3 col-4">
+        <div class="font-monospace col-lg-2 col-md-3 col-4">
             <div><label for="netsize" class="form-label mb-0 ms-1">Network Size</label></div>
             <div><input id="netsize" type="text" class="form-control w-10" value="16" aria-label="Network Size" pattern="^(\d|[12]\d|30)$" required></div>
         </div>
-        <div class="col-lg-2 col-md-3 col-3">
+        <div class="col-lg-2 col-md-3 col-3 font-">
             <div style="height:1.5rem"></div>
             <div>
                 <button id="btn_go" class="btn btn-success mb-0 mt-auto" type="button">Go</button>
-                <button id="btn_reset" class="btn btn-danger mb-0 mt-auto" type="button">Reset</button>
+                <div class="dropdown d-inline">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Tools
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#importExportModal" id="btn_import_export">Import / Export</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </form>
@@ -102,6 +109,31 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="importExportModal" tabindex="-1" aria-labelledby="importExportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0 pb-1">
+                    <h3 class="modal-title" id="importExportModalLabel">Import/Export</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-1">
+                    <div class="alert alert-primary show mt-3" role="alert">
+                        Copy the content from the box below to EXPORT the current subnet configuration. Or, overwrite/paste a previously exported configuration into the box below and click IMPORT.
+                    </div>
+                    <div class="form-floating font-monospace">
+                        <textarea class="form-control pt-3" id="importExportArea" style="height: 510px"></textarea>
+                        <label for="importExportArea"></label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="importBtn">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
     <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">

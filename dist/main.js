@@ -27,8 +27,13 @@ $('#btn_go').on('click', function() {
     reset();
 })
 
-$('#btn_reset').on('click', function() {
-    reset();
+$('#importBtn').on('click', function() {
+    importConfig($('#importExportArea').val())
+})
+
+
+$('#btn_import_export').on('click', function() {
+    $('#importExportArea').val(JSON.stringify(exportConfig(), null, 2))
 })
 
 function reset() {
@@ -113,7 +118,6 @@ $('#calcbody').on('keyup', 'td.note input', function(event) {
 $('#calcbody').on('focusout', 'td.note input', function(event) {
     // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
     clearTimeout(noteTimeout);
-    console.log('CAP')
     subnetNotes[this.dataset.subnet] = this.value
 })
 
@@ -372,3 +376,21 @@ function show_warning_modal(message) {
 $( document ).ready(function() {
     reset();
 });
+
+function exportConfig() {
+    return {
+        'config_version': '1',
+        'subnets': subnetMap,
+        'notes': subnetNotes
+    }
+}
+
+function importConfig(text) {
+    // TODO: Probably need error checking here
+    text = JSON.parse(text)
+    if (text['config_version'] === '1') {
+        subnetMap = text['subnets'];
+        subnetNotes = text['notes'];
+        renderTable()
+    }
+}
