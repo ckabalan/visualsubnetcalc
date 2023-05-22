@@ -18,9 +18,18 @@ let infoColumnCount = 5
 let operatingMode = 'NORMAL'
 let noteTimeout;
 let minSubnetSize = 30
+let inflightColor = '#ffffff'
 
 $('input#network,input#netsize').on('input', function() {
     $('#input_form')[0].classList.add('was-validated');
+})
+
+$('#color_palette div').on('click', function() {
+    inflightColor = $(this).css('background-color')
+})
+
+$('#calcbody').on('click', '.row_address, .row_range, .row_usable, .row_hosts, .note', function(event) {
+    $(this).parent().css('background-color', inflightColor)
 })
 
 $('#btn_go').on('click', function() {
@@ -135,12 +144,22 @@ function addRowTree(subnetTree, depth, maxDepth) {
             addRowTree(subnetTree[mapKey], depth + 1, maxDepth)
         } else {
             let subnet_split = mapKey.split('/')
-            addRow(subnet_split[0], parseInt(subnet_split[1]), (infoColumnCount + maxDepth - depth))
+            let notesWidth = '30%';
+            if ((maxDepth > 5) && (maxDepth <= 10)) {
+                notesWidth = '25%';
+            } else if ((maxDepth > 10) && (maxDepth <= 15)) {
+                notesWidth = '20%';
+            } else if ((maxDepth > 15) && (maxDepth <= 20)) {
+                notesWidth = '15%';
+            } else if (maxDepth > 20) {
+                notesWidth = '10%';
+            }
+            addRow(subnet_split[0], parseInt(subnet_split[1]), (infoColumnCount + maxDepth - depth), notesWidth)
         }
     }
 }
 
-function addRow(network, netSize, colspan) {
+function addRow(network, netSize, colspan, notesWidth) {
     // TODO: do some checking here for smaller networks like /32, probably some edge cases to watch for.
     let addressFirst = ip2int(network)
     let addressLast = subnet_last_address(addressFirst, netSize)
@@ -154,7 +173,7 @@ function addRow(network, netSize, colspan) {
         '                <td class="row_range">' + int2ip(addressFirst) + ' - ' + int2ip(addressLast) + '</td>\n' +
         '                <td class="row_usable">' + int2ip(usableFirst) + ' - ' + int2ip(usableLast) + '</td>\n' +
         '                <td class="row_hosts">' + hostCount + '</td>\n' +
-        '                <td class="note"><label><input type="text" class="form-control shadow-none p-0" data-subnet="' + network + '/' + netSize + '" value="' + (subnetNotes[network + '/' + netSize] || '') + '"></label></td>\n' +
+        '                <td class="note" style="width:' + notesWidth + '"><label><input type="text" class="form-control shadow-none p-0" data-subnet="' + network + '/' + netSize + '" value="' + (subnetNotes[network + '/' + netSize] || '') + '"></label></td>\n' +
         '                <td rowspan="1" colspan="' + colspan + '" class="split rotate" data-subnet="' + network + '/' + netSize + '" data-mutate-verb="split"><span>/' + netSize + '</span></td>\n'
     if (netSize > maxNetSize) {
         // This is wrong. Need to figure out a way to get the number of children so you can set rowspan and the number
@@ -315,57 +334,7 @@ function mutate_subnet_map(verb, network, subnetTree) {
         }
     }
 }
-/*
-function validate_cidr(network, netSize) {
-    let returnObj = {
-        'valid': false,
-        'errorNetwork': true,
-        'errorSize': true,
-        'cidr': false,
-        'network': false,
-        'netSize': false
-    }
-    returnObj['network'] = validate_network(network)
-    if (returnObj['network']) {
-        returnObj['errorNetwork'] = false;
-    }
-    if (!/^\d+$/.test(netSize)) {
-        returnObj['errorSize'] = true;
-    } else {
-        netSize = parseInt(netSize)
-        if ((netSize > 32) || (netSize < 0)) {
-            returnObj['errorSize'] = true;
-        } else {
-            returnObj['errorSize'] = false;
-            returnObj['netSize'] = netSize.toString()
-        }
-    }
-    if ((returnObj['errorNetwork'] === false) && (returnObj['errorSize'] === false)) {
-        returnObj['cidr'] = returnObj['network'] + '/' + returnObj['netSize']
-        returnObj['valid'] = true
-    }
-    return returnObj;
-}
 
-function validate_network(network) {
-    // This can probably be done with Regex but this is better.
-    let octets = network.split('.');
-    if (octets.length !== 4) { return false }
-    if (!/^\d+$/.test(octets[0])) { return false }
-    if (!/^\d+$/.test(octets[1])) { return false }
-    if (!/^\d+$/.test(octets[2])) { return false }
-    if (!/^\d+$/.test(octets[3])) { return false }
-    octets[0] = parseInt(octets[0])
-    octets[1] = parseInt(octets[1])
-    octets[2] = parseInt(octets[2])
-    octets[3] = parseInt(octets[3])
-    if ((octets[0] < 0) || (octets[0] > 255)) { return false }
-    if ((octets[1] < 0) || (octets[1] > 255)) { return false }
-    if ((octets[2] < 0) || (octets[2] > 255)) { return false }
-    if ((octets[3] < 0) || (octets[3] > 255)) { return false }
-    return octets.join('.')
-}
-*/
 
 function show_warning_modal(message) {
     var notifyModal = new bootstrap.Modal(document.getElementById("notifyModal"), {});
@@ -375,6 +344,7 @@ function show_warning_modal(message) {
 
 $( document ).ready(function() {
     reset();
+    importConfig('{"config_version":"1","subnets":{"10.0.0.0/16":{"10.0.0.0/17":{"10.0.0.0/18":{},"10.0.64.0/18":{}},"10.0.128.0/17":{"10.0.128.0/18":{"10.0.128.0/19":{},"10.0.160.0/19":{"10.0.160.0/20":{"10.0.160.0/21":{"10.0.160.0/22":{},"10.0.164.0/22":{}},"10.0.168.0/21":{}},"10.0.176.0/20":{"10.0.176.0/21":{"10.0.176.0/22":{"10.0.176.0/23":{},"10.0.178.0/23":{}},"10.0.180.0/22":{}},"10.0.184.0/21":{}}}},"10.0.192.0/18":{"10.0.192.0/19":{},"10.0.224.0/19":{}}}}},"notes":{}}')
 });
 
 function exportConfig() {

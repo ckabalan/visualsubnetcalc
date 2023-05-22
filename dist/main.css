@@ -1,8 +1,81 @@
 :root {
-  --split-foreground: #000000;
-  --split-background: indianred;
-  --join-foreground: #000000;
-  --join-background: skyblue;
+    /*
+    Color Palette
+    https://coolors.co/palette/033270-1368aa-4091c9-9dcee2-fedfd4-f29479-f26a4f-ef3c2d-cb1b16-65010c
+    --yale-blue: #033270ff;
+    --green-blue: #1368aaff;
+    --celestial-blue: #4091c9ff;
+    --light-blue: #9dcee2ff;
+    --misty-rose: #fedfd4ff;
+    --salmon: #f29479ff;
+    --tomato: #f26a4fff;
+    --vermilion: #ef3c2dff;
+    --engineering-orange: #cb1b16ff;
+    --rosewood: #65010cff;
+     */
+    --split-foreground: #000000;
+    /* Combination of Salmon/Tomato */
+    --split-background: #F27F64;
+    --join-foreground: #000000;
+    /* Combination of Light/Celestial Blue */
+    --join-background: #6FB0D6;
+
+    /* Color Palettes for subnet highlights
+    https://coolors.co/palette/f0d7df-f9e0e2-f8eaec-f7ddd9-f7e6da-e3e9dd-c4dbd9-d4e5e3-cae0e4-c8c7d6
+    https://coolors.co/palette/54478c-2c699a-048ba8-0db39e-16db93-83e377-b9e769-efea5a-f1c453-f29e4c
+    https://coolors.co/palette/e2e2df-d2d2cf-e2cfc4-f7d9c4-faedcb-c9e4de-c6def1-dbcdf0-f2c6de-f9c6c9
+    https://coolors.co/palette/54478c-2c699a-048ba8-0db39e-16db93-83e377-b9e769-efea5a-f1c453-f29e4c
+    https://coolors.co/palette/ffadad-ffd6a5-fdffb6-caffbf-9bf6ff-a0c4ff-bdb2ff-ffc6ff-fffffc
+     */
+    --subpal-1-1: #ffadadff;
+    --subpal-1-2: #ffd6a5ff;
+    --subpal-1-3: #fdffb6ff;
+    --subpal-1-4: #caffbfff;
+    --subpal-1-5: #9bf6ffff;
+    --subpal-1-6: #a0c4ffff;
+    --subpal-1-7: #bdb2ffff;
+    --subpal-1-8: #ffc6ffff;
+    --subpal-1-9: #fffffcff;
+    --subpal-1-10: #ffffffff;
+}
+
+#color_palette div {
+    display:inline-block;
+    height:2rem;
+    width:2rem;
+    border:1px solid;
+    cursor:pointer;
+}
+
+#color_palette #palette_picker_1 {
+    background-color: var(--subpal-1-1);
+}
+#color_palette #palette_picker_2 {
+    background-color: var(--subpal-1-2);
+}
+#color_palette #palette_picker_3 {
+    background-color: var(--subpal-1-3);
+}
+#color_palette #palette_picker_4 {
+    background-color: var(--subpal-1-4);
+}
+#color_palette #palette_picker_5 {
+    background-color: var(--subpal-1-5);
+}
+#color_palette #palette_picker_6 {
+    background-color: var(--subpal-1-6);
+}
+#color_palette #palette_picker_7 {
+    background-color: var(--subpal-1-7);
+}
+#color_palette #palette_picker_8 {
+    background-color: var(--subpal-1-8);
+}
+#color_palette #palette_picker_9 {
+    background-color: var(--subpal-1-9);
+}
+#color_palette #palette_picker_10 {
+    background-color: var(--subpal-1-10);
 }
 
 .container-xxl {
@@ -119,13 +192,12 @@
     padding-left:0.5rem;
     padding-right:0.5rem;
 }
-#calc .note {
-    width: 30%;
-}
+
 
 #calc .note input {
     border: none !important;
     border-color: transparent !important;
+    background-color: transparent;
 }
 
 /* https://stackoverflow.com/a/47245068/606974 */
