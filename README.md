@@ -45,6 +45,10 @@ Compile from source:
 
 The full application should then be available within `./dist/`, open `./dist/index.html` in a browser.
 
+## Credits
+
+Split icon made by [Freepik](https://www.flaticon.com/authors/freepik) from [Flaticon](https://www.flaticon.com/).
+
 ## License
 
 Visual Subnet Calculator is released under the [MIT License](https://opensource.org/licenses/MIT)

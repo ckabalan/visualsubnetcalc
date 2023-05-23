@@ -8,6 +8,13 @@
     <link href="main.css" rel="stylesheet">
     <meta name="description" content="Quickly design and collaborate on network design. Visual Subnet Calculator focuses on expediting the work of network administrators, not academic subnetting math.">
     <meta name="robots" content="index, follow" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="mask-icon" href="safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
 </head>
 <body>
 <div class="container-xxl mt-3">
@@ -23,30 +30,37 @@
             </svg>
         </a>
     </div>
-    <h1>Visual Subnet Calculator <span style="font-size:1rem;">(UNDER CONSTRUCTION)</span></h1>
+    <h1>Visual Subnet Calculator</h1>
     <div class="alert alert-primary  alert-dismissible show mt-3" role="alert">
         Enter the network you wish to subnet and use the Split/Join buttons on the right to start designing!
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <form id="input_form" class="row font-monospace g-2 mb-3" novalidate>
-        <div class="col-lg-2 col-md-3 col-4">
+    <form id="input_form" class="row g-2 mb-3" novalidate>
+        <div class="font-monospace col-lg-2 col-md-3 col-4">
             <div><label for="network" class="form-label mb-0 ms-1">Network Address</label></div>
             <div><input id="network" type="text" class="form-control" value="10.0.0.0" aria-label="Network Address" pattern="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" required></div>
         </div>
-        <div class="col-auto">
+        <div class="font-monospace col-auto">
             <div style="height:2rem"></div>
             <div>/</div>
         </div>
-        <div class="col-lg-2 col-md-3 col-4">
+        <div class="font-monospace col-lg-2 col-md-3 col-4">
             <div><label for="netsize" class="form-label mb-0 ms-1">Network Size</label></div>
             <div><input id="netsize" type="text" class="form-control w-10" value="16" aria-label="Network Size" pattern="^(\d|[12]\d|30)$" required></div>
         </div>
-        <div class="col-lg-2 col-md-3 col-3">
+        <div class="col-lg-2 col-md-3 col-3 font-">
             <div style="height:1.5rem"></div>
             <div>
                 <button id="btn_go" class="btn btn-success mb-0 mt-auto" type="button">Go</button>
-                <button id="btn_reset" class="btn btn-danger mb-0 mt-auto" type="button">Reset</button>
+                <div class="dropdown d-inline">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Tools
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#importExportModal" id="btn_import_export">Import / Export</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </form>
@@ -81,6 +95,23 @@
             </tr>
         </tbody>
     </table>
+    <div id="bottom_nav">
+        <div class="d-inline-block align-top pt-1" id="colors_word_open"><span>Colors &#187;</span></div>
+        <div class="d-inline-block d-none" id="color_palette">
+            <div id="palette_picker_1"></div>
+            <div id="palette_picker_2"></div>
+            <div id="palette_picker_3"></div>
+            <div id="palette_picker_4"></div>
+            <div id="palette_picker_5"></div>
+            <div id="palette_picker_6"></div>
+            <div id="palette_picker_7"></div>
+            <div id="palette_picker_8"></div>
+            <div id="palette_picker_9"></div>
+            <div id="palette_picker_10"></div>
+        </div>
+        <div class="d-inline-block align-top align-top pt-1 ps-2 d-none" id="colors_word_close"><span>&#171; Colors</span></div>
+    </div>
+
 
     <div class="modal fade" id="notifyModal" tabindex="-1" aria-labelledby="notifyModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-md">
@@ -95,6 +126,31 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="importExportModal" tabindex="-1" aria-labelledby="importExportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0 pb-1">
+                    <h3 class="modal-title" id="importExportModalLabel">Import/Export</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-1">
+                    <div class="alert alert-primary show mt-3" role="alert">
+                        Copy the content from the box below to EXPORT the current subnet configuration. Or, overwrite/paste a previously exported configuration into the box below and click IMPORT.
+                    </div>
+                    <div class="form-floating font-monospace">
+                        <textarea class="form-control pt-3" id="importExportArea" style="height: 510px"></textarea>
+                        <label for="importExportArea"></label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="importBtn">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
     <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
@@ -118,6 +174,8 @@
                     Developed by <a href="https://www.caesarkabalan.com/" target="_blank">Caesar Kabalan</a> with help from <a href="https://github.com/ckabalan/visualsubnetcalc/graphs/contributors" target="_blank">GitHub Contributors</a>!<br/>
                     <br/>
                     Special thanks to <a href="https://www.davidc.net/" target="_blank">davidc</a> for the <a href="https://www.davidc.net/sites/default/subnets/subnets.html" target="_blank">original tool</a> this website is inspired by.<br/>
+                    <br/>
+                    Split icon made by <a href="https://www.flaticon.com/authors/freepik" target="_blank">Freepik</a> from <a href="https://www.flaticon.com/" target="_blank">Flaticon</a>.<br />
                     <br/>
                     All contributions, even suggestions or bug reports, are welcome at:<br/>
                     <ul>
