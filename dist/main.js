@@ -25,11 +25,16 @@ $('input#network,input#netsize').on('input', function() {
 })
 
 $('#color_palette div').on('click', function() {
-    inflightColor = $(this).css('background-color')
+    // We don't really NEED to convert this to hex, but it's really low overhead to do the
+    // conversion here and saves us space in the export/save
+    inflightColor = rgba2hex($(this).css('background-color'))
 })
 
-$('#calcbody').on('click', '.row_address, .row_range, .row_usable, .row_hosts, .note', function(event) {
+$('#calcbody').on('click', '.row_address, .row_range, .row_usable, .row_hosts, .note, input', function(event) {
     if (inflightColor !== 'NONE') {
+        mutate_subnet_map('color', this.dataset.subnet, '', inflightColor)
+        // We could re-render here, but there is really no point, keep performant and just change the background color now
+        //renderTable();
         $(this).parent().css('background-color', inflightColor)
     }
 })
@@ -76,56 +81,12 @@ function reset() {
     subnetMap = {}
     subnetMap[rootCidr] = {}
     maxNetSize = parseInt($('#netsize').val())
-    /*
-    subnetMap = {
-        '10.0.0.0/16': {
-            '10.0.0.0/17': {},
-            '10.0.128.0/17': {
-                '10.0.128.0/18': {
-                    '10.0.128.0/19': {},
-                    '10.0.160.0/19': {
-                        '10.0.160.0/20': {},
-                        '10.0.176.0/20': {
-                            '10.0.176.0/21': {
-                                '10.0.176.0/22': {
-                                    '10.0.176.0/23': {},
-                                    '10.0.178.0/23': {}
-                                },
-                                '10.0.180.0/22': {}
-                            },
-                            '10.0.184.0/21': {}
-                        }
-                    }
-                },
-                '10.0.192.0/18': {
-                    '10.0.192.0/19': {},
-                    '10.0.224.0/19': {
-                        '10.0.224.0/20': {},
-                        '10.0.240.0/20': {
-                            '10.0.240.0/21': {},
-                            '10.0.248.0/21': {
-                                '10.0.248.0/22': {},
-                                '10.0.252.0/22': {
-                                    '10.0.252.0/23': {},
-                                    '10.0.254.0/23': {
-                                        '10.0.254.0/24': {},
-                                        '10.0.255.0/24': {}
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    */
     renderTable();
 }
 
 $('#calcbody').on('click', 'td.split,td.join', function(event) {
     // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
-    mutate_subnet_map(this.dataset.mutateVerb, this.dataset.subnet, subnetMap)
+    mutate_subnet_map(this.dataset.mutateVerb, this.dataset.subnet, '')
     renderTable();
 })
 
@@ -134,15 +95,14 @@ $('#calcbody').on('keyup', 'td.note input', function(event) {
     let delay = 1000;
     clearTimeout(noteTimeout);
     noteTimeout = setTimeout(function(element) {
-        console.log('CAP')
-        subnetNotes[element.dataset.subnet] = element.value
+        mutate_subnet_map('note', element.dataset.subnet, '', element.value)
     }, delay, this);
 })
 
 $('#calcbody').on('focusout', 'td.note input', function(event) {
     // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
     clearTimeout(noteTimeout);
-    subnetNotes[this.dataset.subnet] = this.value
+    mutate_subnet_map('note', this.dataset.subnet, '', this.value)
 })
 
 
@@ -155,7 +115,8 @@ function renderTable() {
 
 function addRowTree(subnetTree, depth, maxDepth) {
     for (let mapKey in subnetTree) {
-        if (Object.keys(subnetTree[mapKey]).length > 0) {
+        if (mapKey.startsWith('_')) { continue; }
+        if (has_network_sub_keys(subnetTree[mapKey])) {
             addRowTree(subnetTree[mapKey], depth + 1, maxDepth)
         } else {
             let subnet_split = mapKey.split('/')
@@ -169,12 +130,12 @@ function addRowTree(subnetTree, depth, maxDepth) {
             } else if (maxDepth > 20) {
                 notesWidth = '10%';
             }
-            addRow(subnet_split[0], parseInt(subnet_split[1]), (infoColumnCount + maxDepth - depth), notesWidth)
+            addRow(subnet_split[0], parseInt(subnet_split[1]), (infoColumnCount + maxDepth - depth), (subnetTree[mapKey]['_note'] || ''), notesWidth, (subnetTree[mapKey]['_color'] || ''))
         }
     }
 }
 
-function addRow(network, netSize, colspan, notesWidth) {
+function addRow(network, netSize, colspan, note, notesWidth, color) {
     // TODO: do some checking here for smaller networks like /32, probably some edge cases to watch for.
     let addressFirst = ip2int(network)
     let addressLast = subnet_last_address(addressFirst, netSize)
@@ -182,13 +143,18 @@ function addRow(network, netSize, colspan, notesWidth) {
     let usableFirst = addressFirst + 1
     let usableLast = addressLast - 1
     let hostCount = 1 + usableLast - usableFirst
+    let styleTag = ''
+    if (color !== '') {
+        styleTag = ' style="background-color: ' + color + '"'
+        console.log(styleTag)
+    }
     let newRow =
-        '            <tr id="row_' + network.replace('.', '-') + '_' + netSize + '">\n' +
-        '                <td class="row_address">' + network + '/' + netSize + '</td>\n' +
-        '                <td class="row_range">' + int2ip(addressFirst) + ' - ' + int2ip(addressLast) + '</td>\n' +
-        '                <td class="row_usable">' + int2ip(usableFirst) + ' - ' + int2ip(usableLast) + '</td>\n' +
-        '                <td class="row_hosts">' + hostCount + '</td>\n' +
-        '                <td class="note" style="width:' + notesWidth + '"><label><input type="text" class="form-control shadow-none p-0" data-subnet="' + network + '/' + netSize + '" value="' + (subnetNotes[network + '/' + netSize] || '') + '"></label></td>\n' +
+        '            <tr id="row_' + network.replace('.', '-') + '_' + netSize + '"' + styleTag + '>\n' +
+        '                <td data-subnet="' + network + '/' + netSize + '" class="row_address">' + network + '/' + netSize + '</td>\n' +
+        '                <td data-subnet="' + network + '/' + netSize + '" class="row_range">' + int2ip(addressFirst) + ' - ' + int2ip(addressLast) + '</td>\n' +
+        '                <td data-subnet="' + network + '/' + netSize + '" class="row_usable">' + int2ip(usableFirst) + ' - ' + int2ip(usableLast) + '</td>\n' +
+        '                <td data-subnet="' + network + '/' + netSize + '" class="row_hosts">' + hostCount + '</td>\n' +
+        '                <td class="note" style="width:' + notesWidth + '"><label><input type="text" class="form-control shadow-none p-0" data-subnet="' + network + '/' + netSize + '" value="' + note + '"></label></td>\n' +
         '                <td rowspan="1" colspan="' + colspan + '" class="split rotate" data-subnet="' + network + '/' + netSize + '" data-mutate-verb="split"><span>/' + netSize + '</span></td>\n'
     if (netSize > maxNetSize) {
         // This is wrong. Need to figure out a way to get the number of children so you can set rowspan and the number
@@ -229,6 +195,7 @@ function subnet_addresses(netSize) {
 function get_dict_max_depth(dict, curDepth) {
     let maxDepth = curDepth
     for (let mapKey in dict) {
+        if (mapKey.startsWith('_')) { continue; }
         let newDepth = get_dict_max_depth(dict[mapKey], curDepth + 1)
         if (newDepth > maxDepth) { maxDepth = newDepth }
     }
@@ -238,7 +205,8 @@ function get_dict_max_depth(dict, curDepth) {
 
 function get_join_children(subnetTree, childCount) {
     for (let mapKey in subnetTree) {
-        if (Object.keys(subnetTree[mapKey]).length > 0) {
+        if (mapKey.startsWith('_')) { continue; }
+        if (has_network_sub_keys(subnetTree[mapKey])) {
             childCount += get_join_children(subnetTree[mapKey])
         } else {
             return childCount
@@ -246,12 +214,24 @@ function get_join_children(subnetTree, childCount) {
     }
 }
 
+function has_network_sub_keys(dict) {
+    let allKeys = Object.keys(dict)
+    // Maybe an efficient way to do this with a Lambda?
+    for (let i in allKeys) {
+        if (!allKeys[i].startsWith('_')) {
+            return true
+        }
+    }
+    return false
+}
+
 function count_network_children(network, subnetTree, ancestryList) {
     // TODO: This might be able to be optimized. Ultimately it needs to count the number of keys underneath
     // the current key are unsplit networks (IE rows in the table, IE keys with a value of {}).
     let childCount = 0
     for (let mapKey in subnetTree) {
-        if (Object.keys(subnetTree[mapKey]).length > 0) {
+        if (mapKey.startsWith('_')) { continue; }
+        if (has_network_sub_keys(subnetTree[mapKey])) {
             childCount += count_network_children(network, subnetTree[mapKey], ancestryList.concat([mapKey]))
         } else {
             if (ancestryList.includes(network)) {
@@ -267,7 +247,8 @@ function get_network_children(network, subnetTree) {
     // the current key are unsplit networks (IE rows in the table, IE keys with a value of {}).
     let subnetList = []
     for (let mapKey in subnetTree) {
-        if (Object.keys(subnetTree[mapKey]).length > 0) {
+        if (mapKey.startsWith('_')) { continue; }
+        if (has_network_sub_keys(subnetTree[mapKey])) {
             subnetList.push.apply(subnetList, get_network_children(network, subnetTree[mapKey]))
         } else {
             subnetList.push(mapKey)
@@ -279,7 +260,8 @@ function get_network_children(network, subnetTree) {
 function get_matching_network_list(network, subnetTree) {
     let subnetList = []
     for (let mapKey in subnetTree) {
-        if (Object.keys(subnetTree[mapKey]).length > 0) {
+        if (mapKey.startsWith('_')) { continue; }
+        if (has_network_sub_keys(subnetTree[mapKey])) {
             subnetList.push.apply(subnetList, get_matching_network_list(network, subnetTree[mapKey]))
         }
         if (mapKey.split('/')[0] === network) {
@@ -287,6 +269,31 @@ function get_matching_network_list(network, subnetTree) {
         }
     }
     return subnetList
+}
+
+function get_consolidated_property(subnetTree, property) {
+    let allValues = get_property_values(subnetTree, property)
+    // https://stackoverflow.com/questions/14832603/check-if-all-values-of-array-are-equal
+    let allValuesMatch = allValues.every( (val, i, arr) => val === arr[0] )
+    if (allValuesMatch) {
+        return allValues[0]
+    } else {
+        return ''
+    }
+}
+
+function get_property_values(subnetTree, property) {
+    let propValues = []
+    for (let mapKey in subnetTree) {
+        if (has_network_sub_keys(subnetTree[mapKey])) {
+            propValues.push.apply(propValues, get_property_values(subnetTree[mapKey], property))
+        } else {
+            // The "else" above is a bit different because it will start tracking values for subnets which are
+            // in the hierarchy, but not displayed. Those are always blank so it messes up the value list
+            propValues.push(subnetTree[mapKey][property] || '')
+        }
+    }
+    return propValues
 }
 
 function get_network(networkInput, netSize) {
@@ -305,10 +312,12 @@ function split_network(networkInput, netSize) {
     return subnets;
 }
 
-function mutate_subnet_map(verb, network, subnetTree) {
+function mutate_subnet_map(verb, network, subnetTree, propValue = '') {
+    if (subnetTree === '') { subnetTree = subnetMap }
     for (let mapKey in subnetTree) {
-        if (Object.keys(subnetTree[mapKey]).length > 0) {
-            mutate_subnet_map(verb, network, subnetTree[mapKey])
+        if (mapKey.startsWith('_')) { continue; }
+        if (has_network_sub_keys(subnetTree[mapKey])) {
+            mutate_subnet_map(verb, network, subnetTree[mapKey], propValue)
         }
         if (mapKey === network) {
             let netSplit = mapKey.split('/')
@@ -316,33 +325,39 @@ function mutate_subnet_map(verb, network, subnetTree) {
             if (verb === 'split') {
                 if (netSize < minSubnetSize) {
                     let new_networks = split_network(netSplit[0], netSize)
+                    // Could maybe optimize this for readability with some null coalescing
                     subnetTree[mapKey][new_networks[0]] = {}
                     subnetTree[mapKey][new_networks[1]] = {}
-                    // Copy note to both children and delete Delete parent note
-                    subnetNotes[new_networks[0]] = subnetNotes[mapKey]
-                    subnetNotes[new_networks[1]] = subnetNotes[mapKey]
-                    delete subnetNotes[mapKey]
+                    // Options:
+                    //   [ Selected ] Copy note to both children and delete parent note
+                    //   [ Possible ] Blank out the new and old subnet notes
+                    if (subnetTree[mapKey].hasOwnProperty('_note')) {
+                        subnetTree[mapKey][new_networks[0]]['_note'] = subnetTree[mapKey]['_note']
+                        subnetTree[mapKey][new_networks[1]]['_note'] = subnetTree[mapKey]['_note']
+                    }
+                    delete subnetTree[mapKey]['_note']
+                    if (subnetTree[mapKey].hasOwnProperty('_color')) {
+                        subnetTree[mapKey][new_networks[0]]['_color'] = subnetTree[mapKey]['_color']
+                        subnetTree[mapKey][new_networks[1]]['_color'] = subnetTree[mapKey]['_color']
+                    }
+                    delete subnetTree[mapKey]['_color']
                 }
             } else if (verb === 'join') {
-                // Keep the note of the first subnet (which matches the network address) and lose the second subnet's note
-                // Could consider changing this to concatenate the notes into the parent, but I think this is more intuitive
-                // Find first (smallest) subnet note which matches the exact network address (this would be the top network in the join scope)
-                let smallestMatchingNetworkSize = 0
-                for (let subnetCidr in subnetNotes) {
-                    if (subnetCidr.startsWith(netSplit[0])) {
-                        if (parseInt(subnetCidr.split('/')[1]) > smallestMatchingNetworkSize) {
-                            smallestMatchingNetworkSize = subnetCidr.split('/')[1]
-                        }
-                    }
+                // Options:
+                //   [ Selected ] Keep note if all the notes are the same, blank them out if they differ. Most intuitive
+                //   [ Possible ] Lose note data for all deleted subnets.
+                //   [ Possible ] Keep note from first subnet in the join scope. Reasonable but I think rarely will the note be kept by the user
+                //   [ Possible ] Concatenate all notes. Ugly and won't really be useful for more than two subnets being joined
+                subnetTree[mapKey] = {
+                    '_note': get_consolidated_property(subnetTree[mapKey], '_note'),
+                    '_color': get_consolidated_property(subnetTree[mapKey], '_color')
                 }
-                subnetNotes[mapKey] = subnetNotes[netSplit[0] + '/' + smallestMatchingNetworkSize]
-                // Delete all notes of subnets under this collapsed subnet
-                let removeKeys = get_network_children(mapKey, subnetTree[mapKey], [])
-                for (let removeKey in removeKeys) {
-                    subnetNotes[removeKey] = ''
-                }
-                // And delete the subnets themselves
-                subnetTree[mapKey] = {}
+            } else if (verb === 'note') {
+                subnetTree[mapKey]['_note'] = propValue
+                console.log('Note Verb - ' + propValue)
+            } else if (verb === 'color') {
+                subnetTree[mapKey]['_color'] = propValue
+                console.log('Color Verb - ' + propValue)
             } else {
                 // How did you get here?
             }
@@ -359,14 +374,14 @@ function show_warning_modal(message) {
 
 $( document ).ready(function() {
     reset();
-    importConfig('{"config_version":"1","subnets":{"10.0.0.0/16":{"10.0.0.0/17":{"10.0.0.0/18":{},"10.0.64.0/18":{}},"10.0.128.0/17":{"10.0.128.0/18":{"10.0.128.0/19":{},"10.0.160.0/19":{"10.0.160.0/20":{"10.0.160.0/21":{"10.0.160.0/22":{},"10.0.164.0/22":{}},"10.0.168.0/21":{}},"10.0.176.0/20":{"10.0.176.0/21":{"10.0.176.0/22":{"10.0.176.0/23":{},"10.0.178.0/23":{}},"10.0.180.0/22":{}},"10.0.184.0/21":{}}}},"10.0.192.0/18":{"10.0.192.0/19":{},"10.0.224.0/19":{}}}}},"notes":{}}')
+    //importConfig('{"config_version":"1","subnets":{"10.0.0.0/16":{"10.0.0.0/17":{"10.0.0.0/18":{},"10.0.64.0/18":{}},"10.0.128.0/17":{"10.0.128.0/18":{"10.0.128.0/19":{},"10.0.160.0/19":{"10.0.160.0/20":{"10.0.160.0/21":{"10.0.160.0/22":{},"10.0.164.0/22":{}},"10.0.168.0/21":{}},"10.0.176.0/20":{"10.0.176.0/21":{"10.0.176.0/22":{"10.0.176.0/23":{},"10.0.178.0/23":{}},"10.0.180.0/22":{}},"10.0.184.0/21":{}}}},"10.0.192.0/18":{"10.0.192.0/19":{},"10.0.224.0/19":{}}}}},"notes":{}}')
+    //importConfig('{"config_version":"1","subnets":{"10.0.0.0/16":{"10.0.0.0/17":{"10.0.0.0/18":{"_note":"Note 1"},"10.0.64.0/18":{"_note":"Note 2"}},"10.0.128.0/17":{"10.0.128.0/18":{"10.0.128.0/19":{"_note":"Note 3"},"10.0.160.0/19":{"10.0.160.0/20":{"10.0.160.0/21":{"10.0.160.0/22":{"_note":"Note 4"},"10.0.164.0/22":{"_note":"Note 5"}},"10.0.168.0/21":{"_note":"Note 6"}},"10.0.176.0/20":{"10.0.176.0/21":{"10.0.176.0/22":{"10.0.176.0/23":{"_note":"Note 7"},"10.0.178.0/23":{"_note":"Note 8"}},"10.0.180.0/22":{"_note":"Note 9"}},"10.0.184.0/21":{"_note":"Note 10"}}}},"10.0.192.0/18":{"10.0.192.0/19":{"_note":"Note 11"},"10.0.224.0/19":{"_note":"Note 12"}}}}},"notes":{}}')
 });
 
 function exportConfig() {
     return {
         'config_version': '1',
         'subnets': subnetMap,
-        'notes': subnetNotes
     }
 }
 
@@ -375,7 +390,8 @@ function importConfig(text) {
     text = JSON.parse(text)
     if (text['config_version'] === '1') {
         subnetMap = text['subnets'];
-        subnetNotes = text['notes'];
         renderTable()
     }
 }
+
+const rgba2hex = (rgba) => `#${rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/).slice(1).map((n, i) => (i === 3 ? Math.round(parseFloat(n) * 255) : parseFloat(n)).toString(16).padStart(2, '0').replace('NaN', '')).join('')}`
