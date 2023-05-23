@@ -6,10 +6,10 @@ Visual Subnet Calculator is a modernized tool based on the original work by [dav
 It strives to be a tool for quickly designing networks and collaborating on that design with others. It focuses on
 expediting the work of network administrators, not academic subnetting math.
 
-## Design Tenants
+## Design Tenets
 
-The following tenants are the most important values that drive the design of the tool. New features, pull requests, etc
-should align to these tenants, or propose an adjustment to the tenants.
+The following tenets are the most important values that drive the design of the tool. New features, pull requests, etc
+should align to these tenets, or propose an adjustment to the tenets.
 
 - **Simplicity is king.** Network admins are busy and Visual Subnet Calculator should always be easy for FIRST TIME USERS to
   quickly and intuitively use.
@@ -17,7 +17,7 @@ should align to these tenants, or propose an adjustment to the tenants.
   complex architectures.
 - **Users control the data.** We store nothing, but provide convenient ways for users to save and share their designs.
 - **Embrace community contributions.** Consider and respond to all feedback and pull requests in the context of these
-  tenants.
+  tenets.
 
 ## Building From Source
 
