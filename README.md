@@ -24,8 +24,9 @@ should align to these tenets, or propose an adjustment to the tenets.
 If you have a more opinionated best-practice way to lay out this repository please open an issue.
 
 Build prerequisites:
-- npm
-- sass
+- (Optional but recommended) NVM to manage node version
+- node.js (version 20) and associated NPM.
+- sass (Globally installed, following instructions below.)
 
 Compile from source:
 
