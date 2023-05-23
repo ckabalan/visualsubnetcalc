@@ -1,5 +1,9 @@
 {
   "dependencies": {
     "bootstrap": "^5.2.3"
+  },
+  "scripts": {
+    "postinstall": "npm install -g sass",
+    "build":"sass --style compressed scss/custom.scss:../dist/bootstrap.min.css"
   }
 }
