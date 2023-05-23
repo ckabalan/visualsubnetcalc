@@ -39,12 +39,39 @@
     --subpal-1-10: #ffffffff;
 }
 
+#bottom_nav {
+    height:2rem;
+}
+
+#bottom_nav span {
+    border-bottom:1px black dotted;
+}
+
+#color_palette {
+    min-width: 0rem;
+}
+
+#color_palette #colors_word_close {
+    line-height: 2rem;
+}
+
+#color_palette #colors_word_open {
+    display:inline-block;
+    height:2rem;
+    cursor:pointer;
+    white-space: nowrap;
+}
+
 #color_palette div {
     display:inline-block;
     height:2rem;
+    cursor:pointer;
+    white-space: nowrap;
+}
+
+#color_palette div[id^='palette_picker_'] {
     width:2rem;
     border:1px solid;
-    cursor:pointer;
 }
 
 #color_palette #palette_picker_1 {

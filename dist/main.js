@@ -18,7 +18,7 @@ let infoColumnCount = 5
 let operatingMode = 'NORMAL'
 let noteTimeout;
 let minSubnetSize = 30
-let inflightColor = '#ffffff'
+let inflightColor = 'NONE'
 
 $('input#network,input#netsize').on('input', function() {
     $('#input_form')[0].classList.add('was-validated');
@@ -29,7 +29,9 @@ $('#color_palette div').on('click', function() {
 })
 
 $('#calcbody').on('click', '.row_address, .row_range, .row_usable, .row_hosts, .note', function(event) {
-    $(this).parent().css('background-color', inflightColor)
+    if (inflightColor !== 'NONE') {
+        $(this).parent().css('background-color', inflightColor)
+    }
 })
 
 $('#btn_go').on('click', function() {
@@ -38,6 +40,19 @@ $('#btn_go').on('click', function() {
 
 $('#importBtn').on('click', function() {
     importConfig($('#importExportArea').val())
+})
+
+$('#bottom_nav #colors_word_open').on('click', function() {
+    $('#bottom_nav #color_palette').removeClass('d-none');
+    $('#bottom_nav #colors_word_close').removeClass('d-none');
+    $('#bottom_nav #colors_word_open').addClass('d-none');
+})
+
+$('#bottom_nav #colors_word_close').on('click', function() {
+    $('#bottom_nav #color_palette').addClass('d-none');
+    $('#bottom_nav #colors_word_close').addClass('d-none');
+    $('#bottom_nav #colors_word_open').removeClass('d-none');
+    inflightColor = 'NONE'
 })
 
 
