@@ -47,12 +47,24 @@
     border-bottom:1px black dotted;
 }
 
+#copy_url {
+    cursor:pointer !important;
+    text-align: center;
+    width:11rem;
+}
+
+#copy_url span {
+    width:11rem;
+    text-align: center;
+}
+
 #color_palette {
     min-width: 0rem;
 }
 
 #color_palette #colors_word_close {
     line-height: 2rem;
+    cursor:pointer;
 }
 
 #color_palette #colors_word_open {

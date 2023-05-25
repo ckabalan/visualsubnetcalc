@@ -44,7 +44,7 @@ $('#btn_go').on('click', function() {
 })
 
 $('#importBtn').on('click', function() {
-    importConfig($('#importExportArea').val())
+    importConfig(JSON.parse($('#importExportArea').val()))
 })
 
 $('#bottom_nav #colors_word_open').on('click', function() {
@@ -58,6 +58,17 @@ $('#bottom_nav #colors_word_close').on('click', function() {
     $('#bottom_nav #colors_word_close').addClass('d-none');
     $('#bottom_nav #colors_word_open').removeClass('d-none');
     inflightColor = 'NONE'
+})
+
+$('#bottom_nav #copy_url').on('click', function() {
+    // TODO: Provide a warning here if the URL is longer than 2000 characters, probably using a modal.
+    let url = window.location.origin + getConfigUrl()
+    navigator.clipboard.writeText(url);
+    $('#bottom_nav #copy_url span').text('Copied!')
+    // Swap the text back after 3sec
+    setTimeout(function(){
+        $('#bottom_nav #copy_url span').text('Copy Shareable URL')
+    }, 2000)
 })
 
 
@@ -146,7 +157,6 @@ function addRow(network, netSize, colspan, note, notesWidth, color) {
     let styleTag = ''
     if (color !== '') {
         styleTag = ' style="background-color: ' + color + '"'
-        console.log(styleTag)
     }
     let newRow =
         '            <tr id="row_' + network.replace('.', '-') + '_' + netSize + '"' + styleTag + '>\n' +
@@ -354,10 +364,8 @@ function mutate_subnet_map(verb, network, subnetTree, propValue = '') {
                 }
             } else if (verb === 'note') {
                 subnetTree[mapKey]['_note'] = propValue
-                console.log('Note Verb - ' + propValue)
             } else if (verb === 'color') {
                 subnetTree[mapKey]['_color'] = propValue
-                console.log('Color Verb - ' + propValue)
             } else {
                 // How did you get here?
             }
@@ -373,7 +381,10 @@ function show_warning_modal(message) {
 }
 
 $( document ).ready(function() {
-    reset();
+    let autoConfigResult = processConfigUrl();
+    if (!autoConfigResult) {
+        reset();
+    }
     //importConfig('{"config_version":"1","subnets":{"10.0.0.0/16":{"10.0.0.0/17":{"10.0.0.0/18":{},"10.0.64.0/18":{}},"10.0.128.0/17":{"10.0.128.0/18":{"10.0.128.0/19":{},"10.0.160.0/19":{"10.0.160.0/20":{"10.0.160.0/21":{"10.0.160.0/22":{},"10.0.164.0/22":{}},"10.0.168.0/21":{}},"10.0.176.0/20":{"10.0.176.0/21":{"10.0.176.0/22":{"10.0.176.0/23":{},"10.0.178.0/23":{}},"10.0.180.0/22":{}},"10.0.184.0/21":{}}}},"10.0.192.0/18":{"10.0.192.0/19":{},"10.0.224.0/19":{}}}}},"notes":{}}')
     //importConfig('{"config_version":"1","subnets":{"10.0.0.0/16":{"10.0.0.0/17":{"10.0.0.0/18":{"_note":"Note 1"},"10.0.64.0/18":{"_note":"Note 2"}},"10.0.128.0/17":{"10.0.128.0/18":{"10.0.128.0/19":{"_note":"Note 3"},"10.0.160.0/19":{"10.0.160.0/20":{"10.0.160.0/21":{"10.0.160.0/22":{"_note":"Note 4"},"10.0.164.0/22":{"_note":"Note 5"}},"10.0.168.0/21":{"_note":"Note 6"}},"10.0.176.0/20":{"10.0.176.0/21":{"10.0.176.0/22":{"10.0.176.0/23":{"_note":"Note 7"},"10.0.178.0/23":{"_note":"Note 8"}},"10.0.180.0/22":{"_note":"Note 9"}},"10.0.184.0/21":{"_note":"Note 10"}}}},"10.0.192.0/18":{"10.0.192.0/19":{"_note":"Note 11"},"10.0.224.0/19":{"_note":"Note 12"}}}}},"notes":{}}')
 });
@@ -385,9 +396,80 @@ function exportConfig() {
     }
 }
 
+function getConfigUrl() {
+    let defaultExport = JSON.parse(JSON.stringify(exportConfig()));
+    renameKey(defaultExport, 'config_version', 'v')
+    renameKey(defaultExport, 'subnets', 's')
+    shortenKeys(defaultExport['s'])
+    return '/index.html?c=' + LZString.compressToEncodedURIComponent(JSON.stringify(defaultExport))
+}
+
+function processConfigUrl() {
+    const params = new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop),
+    });
+    if (params['c'] !== null) {
+        let urlConfig = JSON.parse(LZString.decompressFromEncodedURIComponent(params['c']))
+        renameKey(urlConfig, 'v', 'config_version')
+        renameKey(urlConfig, 's', 'subnets')
+        expandKeys(urlConfig['subnets'])
+        let subnet_split = Object.keys(urlConfig['subnets'])[0].split('/')
+        $('#network').val(subnet_split[0])
+        $('#netsize').val(subnet_split[1])
+        importConfig(urlConfig)
+        return true
+    }
+}
+
+function shortenKeys(subnetTree) {
+    for (let mapKey in subnetTree) {
+        if (mapKey.startsWith('_')) {
+            continue;
+        }
+        if (has_network_sub_keys(subnetTree[mapKey])) {
+            shortenKeys(subnetTree[mapKey])
+        } else {
+            if (subnetTree[mapKey].hasOwnProperty('_note')) {
+                renameKey(subnetTree[mapKey], '_note', '_n')
+            }
+            if (subnetTree[mapKey].hasOwnProperty('_color')) {
+                renameKey(subnetTree[mapKey], '_color', '_c')
+            }
+
+        }
+    }
+}
+
+function expandKeys(subnetTree) {
+    for (let mapKey in subnetTree) {
+        if (mapKey.startsWith('_')) {
+            continue;
+        }
+        if (has_network_sub_keys(subnetTree[mapKey])) {
+            expandKeys(subnetTree[mapKey])
+        } else {
+            if (subnetTree[mapKey].hasOwnProperty('_n')) {
+                renameKey(subnetTree[mapKey], '_n', '_note')
+            }
+            if (subnetTree[mapKey].hasOwnProperty('_c')) {
+                renameKey(subnetTree[mapKey], '_c', '_color')
+            }
+
+        }
+    }
+}
+
+
+function renameKey(obj, oldKey, newKey) {
+    if (oldKey !== newKey) {
+    Object.defineProperty(obj, newKey,
+        Object.getOwnPropertyDescriptor(obj, oldKey));
+        delete obj[oldKey];
+    }
+}
+
 function importConfig(text) {
     // TODO: Probably need error checking here
-    text = JSON.parse(text)
     if (text['config_version'] === '1') {
         subnetMap = text['subnets'];
         renderTable()
