@@ -33,7 +33,7 @@ Compile from source:
 ```shell
 # Clone the repository
 > git clone https://github.com/ckabalan/visualsubnetcalc
-# Use reccomended NVM version
+# Use recommended NVM version
 > nvm use
 # Change to the sources directory
 > cd visualsubnetcalc/src
@@ -41,6 +41,8 @@ Compile from source:
 > npm install
 # Compile Bootstrap (Also install sass command line globally)
 > npm run build
+# Run the local webserver
+> npm start
 ```
 
 The full application should then be available within `./dist/`, open `./dist/index.html` in a browser.
