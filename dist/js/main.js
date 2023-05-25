@@ -19,6 +19,8 @@ let operatingMode = 'NORMAL'
 let noteTimeout;
 let minSubnetSize = 30
 let inflightColor = 'NONE'
+let urlVersion = '1'
+let configVersion = '1'
 
 $('input#network,input#netsize').on('input', function() {
     $('#input_form')[0].classList.add('was-validated');
@@ -391,7 +393,7 @@ $( document ).ready(function() {
 
 function exportConfig() {
     return {
-        'config_version': '1',
+        'config_version': configVersion,
         'subnets': subnetMap,
     }
 }
@@ -401,7 +403,7 @@ function getConfigUrl() {
     renameKey(defaultExport, 'config_version', 'v')
     renameKey(defaultExport, 'subnets', 's')
     shortenKeys(defaultExport['s'])
-    return '/index.html?c=' + LZString.compressToEncodedURIComponent(JSON.stringify(defaultExport))
+    return '/index.html?c=' + urlVersion + LZString.compressToEncodedURIComponent(JSON.stringify(defaultExport))
 }
 
 function processConfigUrl() {
@@ -409,15 +411,20 @@ function processConfigUrl() {
         get: (searchParams, prop) => searchParams.get(prop),
     });
     if (params['c'] !== null) {
-        let urlConfig = JSON.parse(LZString.decompressFromEncodedURIComponent(params['c']))
-        renameKey(urlConfig, 'v', 'config_version')
-        renameKey(urlConfig, 's', 'subnets')
-        expandKeys(urlConfig['subnets'])
-        let subnet_split = Object.keys(urlConfig['subnets'])[0].split('/')
-        $('#network').val(subnet_split[0])
-        $('#netsize').val(subnet_split[1])
-        importConfig(urlConfig)
-        return true
+        // First character is the version of the URL string, in case the mechanism of encoding changes
+        let urlVersion = params['c'].substring(0, 1)
+        let urlData = params['c'].substring(1)
+        if (urlVersion === '1') {
+            let urlConfig = JSON.parse(LZString.decompressFromEncodedURIComponent(params['c'].substring(1)))
+            renameKey(urlConfig, 'v', 'config_version')
+            renameKey(urlConfig, 's', 'subnets')
+            expandKeys(urlConfig['subnets'])
+            let subnet_split = Object.keys(urlConfig['subnets'])[0].split('/')
+            $('#network').val(subnet_split[0])
+            $('#netsize').val(subnet_split[1])
+            importConfig(urlConfig)
+            return true
+        }
     }
 }
 
