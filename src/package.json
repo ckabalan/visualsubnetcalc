@@ -1,9 +1,12 @@
 {
-  "dependencies": {
-    "bootstrap": "^5.2.3"
-  },
-  "scripts": {
-    "postinstall": "npm install -g sass",
-    "build":"sass --style compressed scss/custom.scss:../dist/bootstrap.min.css"
-  }
+	"dependencies": {
+		"bootstrap": "^5.2.3",
+		"lz-string": "^1.5.0",
+		"http-server": "^14.1.1"
+	},
+	"scripts": {
+		"postinstall": "npm install -g sass",
+		"build": "sass --style compressed scss/custom.scss:../dist/css/bootstrap.min.css && cp node_modules/lz-string/libs/lz-string.min.js ../dist/js/lz-string.min.js",
+		"start": "node node_modules/http-server/bin/http-server ../dist"
+	}
 }
