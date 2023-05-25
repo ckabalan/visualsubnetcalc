@@ -1,6 +1,6 @@
-# Visual Subnet Calculator
+# Visual Subnet Calculator - [visualsubnetcalc.com](https://visualsubnetcalc.com)
 
-Use live: [visualsubnetcalc.com](https://visualsubnetcalc.com)
+![demo.gif](src%2Fdemo.gif)
 
 Visual Subnet Calculator is a modernized tool based on the original work by [davidc](https://github.com/davidc/subnets).
 It strives to be a tool for quickly designing networks and collaborating on that design with others. It focuses on
