@@ -154,6 +154,10 @@ function addRow(network, netSize, colspan, note, notesWidth, color) {
     let addressLast = subnet_last_address(addressFirst, netSize)
     // Will need to adjust this for AWS mode
     let usableFirst = addressFirst + 1
+    if (operatingMode === 'AWS') {
+        // https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html
+        usableFirst += 3
+    }
     let usableLast = addressLast - 1
     let hostCount = 1 + usableLast - usableFirst
     let styleTag = ''
