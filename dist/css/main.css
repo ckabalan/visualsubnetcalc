@@ -39,6 +39,10 @@
     --subpal-1-10: #ffffffff;
 }
 
+.table>:not(caption)>*>* {
+    background-color: unset;
+}
+
 #bottom_nav {
     height:2rem;
 }
