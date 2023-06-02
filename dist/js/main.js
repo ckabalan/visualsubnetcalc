@@ -37,6 +37,7 @@ $('#calcbody').on('click', '.row_address, .row_range, .row_usable, .row_hosts, .
         mutate_subnet_map('color', this.dataset.subnet, '', inflightColor)
         // We could re-render here, but there is really no point, keep performant and just change the background color now
         //renderTable();
+        //console.log($(this).parent())
         $(this).parent().css('background-color', inflightColor)
     }
 })
