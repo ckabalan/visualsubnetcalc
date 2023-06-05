@@ -447,9 +447,6 @@ function processConfigUrl() {
             renameKey(urlConfig, 'v', 'config_version')
             renameKey(urlConfig, 's', 'subnets')
             expandKeys(urlConfig['subnets'])
-            let subnet_split = Object.keys(urlConfig['subnets'])[0].split('/')
-            $('#network').val(subnet_split[0])
-            $('#netsize').val(subnet_split[1])
             importConfig(urlConfig)
             return true
         }
@@ -506,6 +503,9 @@ function renameKey(obj, oldKey, newKey) {
 function importConfig(text) {
     // TODO: Probably need error checking here
     if (text['config_version'] === '1') {
+        let subnet_split = Object.keys(text['subnets'])[0].split('/')
+        $('#network').val(subnet_split[0])
+        $('#netsize').val(subnet_split[1])
         subnetMap = text['subnets'];
         renderTable()
     }
