@@ -3,8 +3,8 @@ let subnetNotes = {};
 let maxNetSize = 0;
 let infoColumnCount = 5
 // NORMAL mode:
-//   - Smallest subnet: /30
-//   - Two reserved addresses per subnet:
+//   - Smallest subnet: /32
+//   - Two reserved addresses per subnet of size <= 30:
 //     - Network Address (network + 0)
 //     - Broadcast Address (last network address)
 // AWS mode (future):
@@ -17,7 +17,7 @@ let infoColumnCount = 5
 //     - Broadcast Address (last network address)
 let operatingMode = 'NORMAL'
 let noteTimeout;
-let minSubnetSize = 30
+let minSubnetSize = 32
 let inflightColor = 'NONE'
 let urlVersion = '1'
 let configVersion = '1'
@@ -83,7 +83,7 @@ function reset() {
     if (operatingMode === 'AWS') {
         minSubnetSize = 28
     } else {
-        minSubnetSize = 30
+        minSubnetSize = 32
     }
     let cidrInput = $('#network').val() + '/' + $('#netsize').val()
     let rootNetwork = get_network($('#network').val(), $('#netsize').val())
@@ -150,26 +150,30 @@ function addRowTree(subnetTree, depth, maxDepth) {
 }
 
 function addRow(network, netSize, colspan, note, notesWidth, color) {
-    // TODO: do some checking here for smaller networks like /32, probably some edge cases to watch for.
     let addressFirst = ip2int(network)
     let addressLast = subnet_last_address(addressFirst, netSize)
-    // Will need to adjust this for AWS mode
-    let usableFirst = addressFirst + 1
-    if (operatingMode === 'AWS') {
-        // https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html
-        usableFirst += 3
-    }
-    let usableLast = addressLast - 1
+    let usableFirst = subnet_usable_first(addressFirst, netSize, operatingMode)
+    let usableLast = subnet_usable_last(addressFirst, netSize)
     let hostCount = 1 + usableLast - usableFirst
     let styleTag = ''
     if (color !== '') {
         styleTag = ' style="background-color: ' + color + '"'
     }
+
+    let rangeCol, usableCol;
+    if (netSize < 32) {
+        rangeCol = int2ip(addressFirst) + ' - ' + int2ip(addressLast);
+        usableCol = int2ip(usableFirst) + ' - ' + int2ip(usableLast);
+    } else {
+        rangeCol = int2ip(addressFirst);
+        usableCol = int2ip(usableFirst);
+    }
+
     let newRow =
         '            <tr id="row_' + network.replace('.', '-') + '_' + netSize + '"' + styleTag + '>\n' +
         '                <td data-subnet="' + network + '/' + netSize + '" class="row_address">' + network + '/' + netSize + '</td>\n' +
-        '                <td data-subnet="' + network + '/' + netSize + '" class="row_range">' + int2ip(addressFirst) + ' - ' + int2ip(addressLast) + '</td>\n' +
-        '                <td data-subnet="' + network + '/' + netSize + '" class="row_usable">' + int2ip(usableFirst) + ' - ' + int2ip(usableLast) + '</td>\n' +
+        '                <td data-subnet="' + network + '/' + netSize + '" class="row_range">' + rangeCol + '</td>\n' +
+        '                <td data-subnet="' + network + '/' + netSize + '" class="row_usable">' + usableCol + '</td>\n' +
         '                <td data-subnet="' + network + '/' + netSize + '" class="row_hosts">' + hostCount + '</td>\n' +
         '                <td class="note" style="width:' + notesWidth + '"><label><input type="text" class="form-control shadow-none p-0" data-subnet="' + network + '/' + netSize + '" value="' + note + '"></label></td>\n' +
         '                <td rowspan="1" colspan="' + colspan + '" class="split rotate" data-subnet="' + network + '/' + netSize + '" data-mutate-verb="split"><span>/' + netSize + '</span></td>\n'
@@ -207,6 +211,25 @@ function subnet_last_address(subnet, netSize) {
 
 function subnet_addresses(netSize) {
     return 2**(32-netSize);
+}
+
+function subnet_usable_first(network, netSize, operatingMode) {
+    if (netSize < 31) {
+        // https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html
+        // AWS reserves 3 additional IPs
+        return network + (operatingMode === 'AWS' ? 4 : 1);
+    } else {
+        return network;
+    }
+}
+
+function subnet_usable_last(network, netSize) {
+    let last_address = subnet_last_address(network, netSize);
+    if (netSize < 31) {
+        return last_address - 1;
+    } else {
+        return last_address;
+    }
 }
 
 function get_dict_max_depth(dict, curDepth) {
