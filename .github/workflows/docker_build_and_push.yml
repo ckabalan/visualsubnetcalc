@@ -22,7 +22,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - 
-        name: container_name
+        id: container_name
         uses: ASzc/change-string-case-action@v5
         with:
           string: ${{ github.repository_owner }}/${{ github.event.repository.name }}
