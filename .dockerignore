@@ -1,0 +1,4 @@
+.gitignore
+src/cloudformation.yaml
+LICENSE
+README.md
