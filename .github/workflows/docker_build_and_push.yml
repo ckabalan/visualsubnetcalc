@@ -21,9 +21,14 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - 
+        name: container_name
+        uses: ASzc/change-string-case-action@v5
+        with:
+          string: ${{ github.repository_owner }}/${{ github.event.repository.name }}
       -
         name: Build and push
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ github.repository_owner.lowercase }}/${{ github.event.repository.name.lowercase }}:latest
+          tags: ${{ steps.container_name.outputs.lowercase }}:latest
