@@ -26,4 +26,4 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ github.event.repository.name }}:latest
+          tags: ${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
