@@ -7,7 +7,7 @@ on:
       - 'main'
 
 env:
-  DOCKERHUB_TAG: ${{ env.BRANCH == 'main' && 'latest' || 'develop' }}
+  DOCKERHUB_TAG: ${{ github.ref_name == 'main' && 'latest' || 'develop' }}
 
 
 jobs:
