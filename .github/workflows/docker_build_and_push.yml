@@ -3,7 +3,12 @@ name: docker
 on:
   push:
     branches:
+      - 'develop'
       - 'main'
+
+env:
+  DOCKERHUB_TAG: ${{ env.BRANCH == 'main' && 'latest' || 'develop' }}
+
 
 jobs:
   docker:
@@ -31,4 +36,5 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ steps.container_name.outputs.lowercase }}:latest
+          tags: ${{ steps.container_name.outputs.lowercase }}:${{ env.DOCKERHUB_TAG }}
+
