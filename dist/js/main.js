@@ -15,12 +15,13 @@ let infoColumnCount = 5
 //     - AWS Reserved - VPC DNS
 //     - AWS Reserved - Future Use
 //     - Broadcast Address (last network address)
-let operatingMode = 'NORMAL'
+//let operatingMode = 'NORMAL'
 let noteTimeout;
 let minSubnetSize = 32
+let operatingMode = $("input[type=radio][name=operatingMode]:checked" ).val();
 let inflightColor = 'NONE'
-let urlVersion = '1'
-let configVersion = '1'
+let urlVersion = '2'
+let configVersion = '2'
 
 $('input#network,input#netsize').on('input', function() {
     $('#input_form')[0].classList.add('was-validated');
@@ -79,8 +80,11 @@ $('#btn_import_export').on('click', function() {
 })
 
 function reset() {
+    operatingMode = $("input[type=radio][name=operatingMode]:checked" ).val();
     if (operatingMode === 'AWS') {
         minSubnetSize = 28
+    } else if (operatingMode === 'AZURE') {
+        minSubnetSize = 29
     } else {
         minSubnetSize = 32
     }
@@ -94,13 +98,13 @@ function reset() {
     subnetMap = {}
     subnetMap[rootCidr] = {}
     maxNetSize = parseInt($('#netsize').val())
-    renderTable();
+    renderTable(operatingMode);
 }
 
 $('#calcbody').on('click', 'td.split,td.join', function(event) {
     // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
     mutate_subnet_map(this.dataset.mutateVerb, this.dataset.subnet, '')
-    renderTable();
+    renderTable(operatingMode);
 })
 
 $('#calcbody').on('keyup', 'td.note input', function(event) {
@@ -119,18 +123,18 @@ $('#calcbody').on('focusout', 'td.note input', function(event) {
 })
 
 
-function renderTable() {
+function renderTable(operatingMode) {
     // TODO: Validation Code
     $('#calcbody').empty();
     let maxDepth = get_dict_max_depth(subnetMap, 0)
-    addRowTree(subnetMap, 0, maxDepth)
+    addRowTree(subnetMap, 0, maxDepth, operatingMode)
 }
 
-function addRowTree(subnetTree, depth, maxDepth) {
+function addRowTree(subnetTree, depth, maxDepth,operatingMode) {
     for (let mapKey in subnetTree) {
         if (mapKey.startsWith('_')) { continue; }
         if (has_network_sub_keys(subnetTree[mapKey])) {
-            addRowTree(subnetTree[mapKey], depth + 1, maxDepth)
+            addRowTree(subnetTree[mapKey], depth + 1, maxDepth,operatingMode)
         } else {
             let subnet_split = mapKey.split('/')
             let notesWidth = '30%';
@@ -143,12 +147,12 @@ function addRowTree(subnetTree, depth, maxDepth) {
             } else if (maxDepth > 20) {
                 notesWidth = '10%';
             }
-            addRow(subnet_split[0], parseInt(subnet_split[1]), (infoColumnCount + maxDepth - depth), (subnetTree[mapKey]['_note'] || ''), notesWidth, (subnetTree[mapKey]['_color'] || ''))
+            addRow(subnet_split[0], parseInt(subnet_split[1]), (infoColumnCount + maxDepth - depth), (subnetTree[mapKey]['_note'] || ''), notesWidth, (subnetTree[mapKey]['_color'] || ''),operatingMode)
         }
     }
 }
 
-function addRow(network, netSize, colspan, note, notesWidth, color) {
+function addRow(network, netSize, colspan, note, notesWidth, color, operatingMode) {
     let addressFirst = ip2int(network)
     let addressLast = subnet_last_address(addressFirst, netSize)
     let usableFirst = subnet_usable_first(addressFirst, netSize, operatingMode)
@@ -216,7 +220,7 @@ function subnet_usable_first(network, netSize, operatingMode) {
     if (netSize < 31) {
         // https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html
         // AWS reserves 3 additional IPs
-        return network + (operatingMode === 'AWS' ? 4 : 1);
+        return network + (operatingMode == 'NORMAL' ? 1 : 4);
     } else {
         return network;
     }
@@ -421,6 +425,7 @@ $( document ).ready(function() {
 function exportConfig() {
     return {
         'config_version': configVersion,
+        'operating_mode': operatingMode,
         'subnets': subnetMap,
     }
 }
@@ -428,6 +433,7 @@ function exportConfig() {
 function getConfigUrl() {
     let defaultExport = JSON.parse(JSON.stringify(exportConfig()));
     renameKey(defaultExport, 'config_version', 'v')
+    renameKey(defaultExport, 'operator_mode', 'm')
     renameKey(defaultExport, 'subnets', 's')
     shortenKeys(defaultExport['s'])
     return '/index.html?c=' + urlVersion + LZString.compressToEncodedURIComponent(JSON.stringify(defaultExport))
@@ -448,6 +454,15 @@ function processConfigUrl() {
             expandKeys(urlConfig['subnets'])
             importConfig(urlConfig)
             return true
+        } else if (urlVersion === '2') {
+            let urlConfig = JSON.parse(LZString.decompressFromEncodedURIComponent(params['c'].substring(1)))
+            renameKey(urlConfig, 'v', 'config_version')
+            renameKey(urlConfig, 'm','operatingMode')
+            renameKey(urlConfig, 's', 'subnets')
+            expandKeys(urlConfig['subnets'])
+            importConfig(urlConfig)
+            return true
+
         }
     }
 }
@@ -506,7 +521,14 @@ function importConfig(text) {
         $('#network').val(subnet_split[0])
         $('#netsize').val(subnet_split[1])
         subnetMap = text['subnets'];
-        renderTable()
+        renderTable('NORMAL')
+    } else if (text['config_version'] === '1') {
+        let subnet_split = Object.keys(text['subnets'])[0].split('/')
+        let operating_mode = text['operatingMode']
+        $('#network').val(subnet_split[0])
+        $('#netsize').val(subnet_split[1])
+        subnetMap = text['subnets'];
+        renderTable(operatingMode)
     }
 }
 

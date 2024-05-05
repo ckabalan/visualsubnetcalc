@@ -5,7 +5,7 @@
 		"http-server": "^14.1.1"
 	},
 	"scripts": {
-		"postinstall": "npm install -g sass",
+		"postinstall": "sudo npm install -g sass",
 		"build": "sass --style compressed scss/custom.scss:../dist/css/bootstrap.min.css && cp node_modules/lz-string/libs/lz-string.min.js ../dist/js/lz-string.min.js",
 		"start": "node node_modules/http-server/bin/http-server ../dist -c-1"
 	}
