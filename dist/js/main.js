@@ -7,7 +7,7 @@ let infoColumnCount = 5
 //   - Two reserved addresses per subnet of size <= 30:
 //     - Network Address (network + 0)
 //     - Broadcast Address (last network address)
-// AWS mode (future):
+// AWS mode :
 //   - Smallest subnet: /28
 //   - Two reserved addresses per subnet:
 //     - Network Address (network + 0)
@@ -15,7 +15,14 @@ let infoColumnCount = 5
 //     - AWS Reserved - VPC DNS
 //     - AWS Reserved - Future Use
 //     - Broadcast Address (last network address)
-//let operatingMode = 'NORMAL'
+// Azure mode :
+//   - Smallest subnet: /29
+//   - Two reserved addresses per subnet:
+//     - Network Address (network + 0)
+//     - Azure Reserved - Default Gateway
+//     - Azure Reserved - DNS Mapping
+//     - Azure Reserved - DNS Mapping
+//     - Broadcast Address (last network address)
 let noteTimeout;
 let minSubnetSize = 32
 let operatingMode = $("input[type=radio][name=operatingMode]:checked" ).val();
@@ -66,6 +73,7 @@ $('#bottom_nav #colors_word_close').on('click', function() {
 $('#bottom_nav #copy_url').on('click', function() {
     // TODO: Provide a warning here if the URL is longer than 2000 characters, probably using a modal.
     let url = window.location.origin + getConfigUrl()
+    console.log(url);
     navigator.clipboard.writeText(url);
     $('#bottom_nav #copy_url span').text('Copied!')
     // Swap the text back after 3sec
@@ -220,6 +228,8 @@ function subnet_usable_first(network, netSize, operatingMode) {
     if (netSize < 31) {
         // https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html
         // AWS reserves 3 additional IPs
+        // https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets
+        // Azure reserves 3 additional IPs
         return network + (operatingMode == 'NORMAL' ? 1 : 4);
     } else {
         return network;
@@ -433,7 +443,7 @@ function exportConfig() {
 function getConfigUrl() {
     let defaultExport = JSON.parse(JSON.stringify(exportConfig()));
     renameKey(defaultExport, 'config_version', 'v')
-    renameKey(defaultExport, 'operator_mode', 'm')
+    renameKey(defaultExport, 'operating_mode', 'm')
     renameKey(defaultExport, 'subnets', 's')
     shortenKeys(defaultExport['s'])
     return '/index.html?c=' + urlVersion + LZString.compressToEncodedURIComponent(JSON.stringify(defaultExport))
@@ -456,8 +466,9 @@ function processConfigUrl() {
             return true
         } else if (urlVersion === '2') {
             let urlConfig = JSON.parse(LZString.decompressFromEncodedURIComponent(params['c'].substring(1)))
+            console.log(urlConfig)
             renameKey(urlConfig, 'v', 'config_version')
-            renameKey(urlConfig, 'm','operatingMode')
+            renameKey(urlConfig, 'm','operating_mode')
             renameKey(urlConfig, 's', 'subnets')
             expandKeys(urlConfig['subnets'])
             importConfig(urlConfig)
@@ -522,11 +533,12 @@ function importConfig(text) {
         $('#netsize').val(subnet_split[1])
         subnetMap = text['subnets'];
         renderTable('NORMAL')
-    } else if (text['config_version'] === '1') {
+    } else if (text['config_version'] === '2') {
         let subnet_split = Object.keys(text['subnets'])[0].split('/')
-        let operating_mode = text['operatingMode']
+        let operatingMode = text['operating_mode']
         $('#network').val(subnet_split[0])
         $('#netsize').val(subnet_split[1])
+        $("input[type=radio][name=operatingMode][id=" + operatingMode + "]").prop("checked", true);
         subnetMap = text['subnets'];
         renderTable(operatingMode)
     }
