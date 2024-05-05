@@ -73,7 +73,6 @@ $('#bottom_nav #colors_word_close').on('click', function() {
 $('#bottom_nav #copy_url').on('click', function() {
     // TODO: Provide a warning here if the URL is longer than 2000 characters, probably using a modal.
     let url = window.location.origin + getConfigUrl()
-    console.log(url);
     navigator.clipboard.writeText(url);
     $('#bottom_nav #copy_url span').text('Copied!')
     // Swap the text back after 3sec
@@ -466,7 +465,6 @@ function processConfigUrl() {
             return true
         } else if (urlVersion === '2') {
             let urlConfig = JSON.parse(LZString.decompressFromEncodedURIComponent(params['c'].substring(1)))
-            console.log(urlConfig)
             renameKey(urlConfig, 'v', 'config_version')
             renameKey(urlConfig, 'm','operating_mode')
             renameKey(urlConfig, 's', 'subnets')
