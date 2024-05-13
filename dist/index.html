@@ -36,7 +36,6 @@
         <p class="mb-0">Enter the network you wish to subnet and use the Split/Join buttons on the right to start designing!</p>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-
     <form id="input_form" class="row g-2 mb-3" novalidate>
         <div class="font-monospace col-lg-2 col-md-3 col-4">
             <div><label for="network" class="form-label mb-0 ms-1">Network Address</label></div>
@@ -48,7 +47,7 @@
         </div>
         <div class="font-monospace col-lg-2 col-md-3 col-4">
             <div><label for="netsize" class="form-label mb-0 ms-1">Network Size</label></div>
-            <div><input id="netsize" type="text" class="form-control w-10" value="16" aria-label="Network Size" pattern="^(\d|[12]\d|30)$" required></div>
+            <div><input id="netsize" type="text" class="form-control w-10" value="16" aria-label="Network Size" pattern="^(\d|[12]\d|30|31|32)$" required></div>
         </div>
         <div class="col-lg-2 col-md-3 col-3 font-">
             <div style="height:1.5rem"></div>
@@ -62,9 +61,25 @@
                         <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#importExportModal" id="btn_import_export">Import / Export</a></li>
                     </ul>
                 </div>
+                </div>
             </div>
-        </div>
     </form>
+    <form id="cloud_selection" class="g-2 mb-3">
+        <div class="font-monospace form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="NORMAL" name="operatingMode" value="NORMAL" checked>
+            <label class="form-check-label" for="standard">Standard</label>
+        </div>
+        <div class="font-monospace form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="AZURE" name="operatingMode" value="AZURE">
+            <label class="form-check-label" for="azure">Azure</label>
+        </div>
+        <div class="font-monospace form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="AWS" name="operatingMode" value="AWS">
+            <label class="form-check-label" for="aws">AWS</label>
+            </div>
+
+</form>
+
 
 
     <table id="calc" class="table table-bordered font-monospace">
@@ -77,7 +92,7 @@
                 <th id="hostsHeader" style="display: table-cell;">Hosts</th>
                 <th id="noteHeader" colspan="100%" style="display: table-cell;">
                     Note
-                    <div style="display:inline-block; float:right;"><span class="split">Split</span>/<span class="join">Join</span></div>
+                    <div style="float:right;"><span class="split">Split</span>/<span class="join">Join</span></div>
                 </th>
                 <!--
                 <th id="joinHeader" colspan="100%" style="display: table-cell;"><span class="split">Split</span>/<span class="join">Join</span></th>
