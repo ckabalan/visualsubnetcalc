@@ -74,7 +74,7 @@ The full application should then be available within `./dist/`, open `./dist/ind
 - [Azure reserves 3 additional IPs](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets)
 
 
-## NORMAL mode:
+## Standard mode:
    - Smallest subnet: /32
    - Two reserved addresses per subnet of size <= 30:
      - Network Address (network + 0)
