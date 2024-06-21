@@ -551,12 +551,16 @@ function set_popover_content(operatingMode) {
     var popoverContent = "This column shows the number of usable IP addresses in each subnet.";
     var popoverTitle = "Usable IPs"
 
-    if (operatingMode === 'AWS') {
-        popoverTitle = "Usable IPs (AWS)";
-        popoverContent = "This column shows the number of usable IP addresses in each subnet. AWS reserves 5 IP Addresses";
-    } else if (operatingMode === 'AZURE') {
-        popoverTitle = "Usable IPs (Azure)";
-        popoverContent = "This column shows the number of usable IP addresses in each subnet. Azure reserves 5 IP Addresses";
+    switch (operatingMode) {
+        case 'AWS':
+        case 'AZURE':
+            var popoverTitle = "Usable IPs (" + operatingMode + ")";
+            var popoverContent = "This column shows the number of usable IP addresses in each subnet. " + operatingMode + " reserves 5 IP Addresses"
+            break;
+        default:
+            var popoverContent = "This column shows the number of usable IP addresses in each subnet.";
+            var popoverTitle = "Usable IPs"
+            break;
     }
 
     // Ensure the popover is properly disposed
