@@ -66,7 +66,7 @@ The container is built automatically and pushed to dockerhub on pushes to the de
 
 ```bash
 # Unprivilged container exposes port 8080 and runs as a non root user.
-docker run -d -p8080:8080 -n visualsubnetcalc ckabalan/visualsubnetcalc:latest
+docker run -d -p8080:8080 --name visualsubnetcalc ckabalan/visualsubnetcalc:latest
 ```
 
 ## Credits
