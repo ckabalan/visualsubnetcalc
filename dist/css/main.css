@@ -255,3 +255,8 @@
     white-space: nowrap;
     padding-top: 0.25rem;
 }
+
+.active-mode {
+    color: #4091C9;
+    font-weight: bold;
+}
