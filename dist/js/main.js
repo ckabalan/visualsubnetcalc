@@ -494,10 +494,10 @@ function switchMode(operatingMode) {
 
             switch (operatingMode) {
                 case 'AWS':
-                    var validate_error_message = "(AWS) Smallest size is /" + minSubnetSizes[operatingMode]
+                    var validate_error_message = "AWS Mode - Smallest size is /" + minSubnetSizes[operatingMode]
                     break;
                 case 'AZURE':
-                    var validate_error_message = "(Azure) Smallest size is /" + minSubnetSizes[operatingMode]
+                    var validate_error_message = "Azure Mode - Smallest size is /" + minSubnetSizes[operatingMode]
                     break;
                 default:
                     var validate_error_message = "Smallest size is /" + minSubnetSizes[operatingMode]
@@ -566,16 +566,16 @@ function validateSubnetSizes(subnetMap, minSubnetSize) {
 function set_usable_ips_title(operatingMode) {
     switch (operatingMode) {
         case 'AWS':
-            $('#useableHeader').html('Usable IPs (<a href="https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html#subnet-sizing-ipv4" target="_blank" style="color:#000; border-bottom: 1px dotted #000; text-decoration: dotted" data-toggle="tooltip" data-placement="top" data-bs-html="true" title="AWS reserves 5 addresses in each subnet for platform use.<br/>Click to navigate to the AWS documentation.">AWS</a>)')
+            $('#useableHeader').html('Usable IPs (<a href="https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html#subnet-sizing-ipv4" target="_blank" style="color:#000; border-bottom: 1px dotted #000; text-decoration: dotted" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="AWS reserves 5 addresses in each subnet for platform use.<br/>Click to navigate to the AWS documentation.">AWS</a>)')
             break;
         case 'AZURE':
-            $('#useableHeader').html('Usable IPs (<a href="https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets" target="_blank" style="color:#000; border-bottom: 1px dotted #000; text-decoration: dotted" data-toggle="tooltip" data-placement="top" data-bs-html="true" title="Azure reserves 5 addresses in each subnet for platform use.<br/>Click to navigate to the Azure documentation.">Azure</a>)')
+            $('#useableHeader').html('Usable IPs (<a href="https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets" target="_blank" style="color:#000; border-bottom: 1px dotted #000; text-decoration: dotted" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="Azure reserves 5 addresses in each subnet for platform use.<br/>Click to navigate to the Azure documentation.">Azure</a>)')
             break;
         default:
             $('#useableHeader').html('Usable IPs')
             break;
     }
-    $('[data-toggle="tooltip"]').tooltip()
+    $('[data-bs-toggle="tooltip"]').tooltip()
 }
 
 function show_warning_modal(message) {
@@ -588,10 +588,13 @@ $( document ).ready(function() {
 
     // Initialize the jQuery Validation on the form
     var validator = $('#input_form').validate({
+        onfocusout: function (element) {
+            $(element).valid();
+        },
         rules: {
             network: {
                 required: true,
-                pattern: "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+                pattern: "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
             },
             netsize: {
                 required: true,
@@ -601,16 +604,37 @@ $( document ).ready(function() {
         messages: {
             network: {
                 required: "Please enter a network",
-                pattern: "Must be a valid IP Address"
+                pattern: "Must be a valid IPv4 Address"
             },
             netsize: {
                 required: "Please enter a network size",
-                pattern: "Smallest size is 32"
+                pattern: "Smallest size is /32"
             }
         },
         errorPlacement: function(error, element) {
-            error.insertAfter(element);
+            console.log(error);
+            console.log(element);
+            if (error[0].innerHTML !== '') {
+                console.log('Error Placement - Text')
+                if (!element.data('errorIsVisible')) {
+                    bootstrap.Tooltip.getInstance(element).setContent({'.tooltip-inner': error[0].innerHTML})
+                    element.tooltip('show');
+                    element.data('errorIsVisible', true)
+                }
+            } else {
+                console.log('Error Placement - Empty')
+                console.log(element);
+                if (element.data('errorIsVisible')) {
+                    element.tooltip('hide');
+                    element.data('errorIsVisible', false)
+                }
+
+            }
+            console.log(element);
         },
+        // This success function appears to be required as errorPlacement() does not fire without the success function
+        // being defined.
+        success: function(label, element) { },
         // When the form is valid, add the 'was-validated' class
         submitHandler: function(form) {
             form.classList.add('was-validated');
