@@ -5,26 +5,48 @@ let infoColumnCount = 5
 // NORMAL mode:
 //   - Smallest subnet: /32
 //   - Two reserved addresses per subnet of size <= 30:
-//     - Network Address (network + 0)
-//     - Broadcast Address (last network address)
-// AWS mode (future):
+//     - Net+0 = Network Address
+//     - Last = Broadcast Address
+// AWS mode:
 //   - Smallest subnet: /28
 //   - Two reserved addresses per subnet:
-//     - Network Address (network + 0)
-//     - AWS Reserved - VPC Router
-//     - AWS Reserved - VPC DNS
-//     - AWS Reserved - Future Use
-//     - Broadcast Address (last network address)
-let operatingMode = 'NORMAL'
+//     - Net+0 = Network Address
+//     - Net+1 = AWS Reserved - VPC Router
+//     - Net+2 = AWS Reserved - VPC DNS
+//     - Net+3 = AWS Reserved - Future Use
+//     - Last = Broadcast Address
+// Azure mode:
+//   - Smallest subnet: /29
+//   - Two reserved addresses per subnet:
+//     - Net+0 = Network Address
+//     - Net+1 = Reserved - Default Gateway
+//     - Net+2 = Reserved - DNS Mapping
+//     - Net+3 = Reserved - DNS Mapping
+//     - Last = Broadcast Address
 let noteTimeout;
-let minSubnetSize = 32
+let operatingMode = 'Standard'
+let previousOperatingMode = 'Standard'
 let inflightColor = 'NONE'
 let urlVersion = '1'
 let configVersion = '1'
 
+const netsizePatterns = {
+    Standard: '^([0-9]|[12][0-9]|3[0-2])$',
+    AZURE: '^([0-9]|[12][0-9])$',
+    AWS: '^([0-9]|[12][0-8])$',
+};
+
+const minSubnetSizes = {
+    Standard: 32,
+    AZURE: 29,
+    AWS: 28,
+};
+
+
 $('input#network,input#netsize').on('input', function() {
     $('#input_form')[0].classList.add('was-validated');
 })
+
 
 $('#color_palette div').on('click', function() {
     // We don't really NEED to convert this to hex, but it's really low overhead to do the
@@ -42,8 +64,50 @@ $('#calcbody').on('click', '.row_address, .row_range, .row_usable, .row_hosts, .
 })
 
 $('#btn_go').on('click', function() {
-    reset();
+    $('#input_form').removeClass('was-validated');
+    $('#input_form').validate();
+    if ($('#input_form').valid()) {
+        $('#input_form')[0].classList.add('was-validated');
+        reset();
+        // Additional actions upon validation can be added here
+    } else {
+        show_warning_modal('<div>Please correct the errors in the form!</div>');
+    }
+
 })
+
+$('#dropdown_standard').click(function() {
+    previousOperatingMode = operatingMode;
+    operatingMode = 'Standard';
+
+    if(!switchMode(operatingMode)) {
+        operatingMode = previousOperatingMode;
+        $('#dropdown_'+ operatingMode.toLowerCase()).addClass('active');
+    }
+
+});
+
+$('#dropdown_azure').click(function() {
+    previousOperatingMode = operatingMode;
+    operatingMode = 'AZURE';
+
+    if(!switchMode(operatingMode)) {
+        operatingMode = previousOperatingMode;
+        $('#dropdown_'+ operatingMode.toLowerCase()).addClass('active');
+    }
+
+});
+
+$('#dropdown_aws').click(function() {
+    previousOperatingMode = operatingMode;
+    operatingMode = 'AWS';
+
+    if(!switchMode(operatingMode)) {
+        operatingMode = previousOperatingMode;
+        $('#dropdown_'+ operatingMode.toLowerCase()).addClass('active');
+    }
+});
+
 
 $('#importBtn').on('click', function() {
     importConfig(JSON.parse($('#importExportArea').val()))
@@ -73,17 +137,14 @@ $('#bottom_nav #copy_url').on('click', function() {
     }, 2000)
 })
 
-
 $('#btn_import_export').on('click', function() {
     $('#importExportArea').val(JSON.stringify(exportConfig(), null, 2))
 })
 
 function reset() {
-    if (operatingMode === 'AWS') {
-        minSubnetSize = 28
-    } else {
-        minSubnetSize = 32
-    }
+
+    set_usable_ips_title(operatingMode);
+
     let cidrInput = $('#network').val() + '/' + $('#netsize').val()
     let rootNetwork = get_network($('#network').val(), $('#netsize').val())
     let rootCidr = rootNetwork + '/' + $('#netsize').val()
@@ -94,13 +155,13 @@ function reset() {
     subnetMap = {}
     subnetMap[rootCidr] = {}
     maxNetSize = parseInt($('#netsize').val())
-    renderTable();
+    renderTable(operatingMode);
 }
 
 $('#calcbody').on('click', 'td.split,td.join', function(event) {
     // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
     mutate_subnet_map(this.dataset.mutateVerb, this.dataset.subnet, '')
-    renderTable();
+    renderTable(operatingMode);
 })
 
 $('#calcbody').on('keyup', 'td.note input', function(event) {
@@ -119,18 +180,18 @@ $('#calcbody').on('focusout', 'td.note input', function(event) {
 })
 
 
-function renderTable() {
+function renderTable(operatingMode) {
     // TODO: Validation Code
     $('#calcbody').empty();
     let maxDepth = get_dict_max_depth(subnetMap, 0)
-    addRowTree(subnetMap, 0, maxDepth)
+    addRowTree(subnetMap, 0, maxDepth, operatingMode)
 }
 
-function addRowTree(subnetTree, depth, maxDepth) {
+function addRowTree(subnetTree, depth, maxDepth,operatingMode) {
     for (let mapKey in subnetTree) {
         if (mapKey.startsWith('_')) { continue; }
         if (has_network_sub_keys(subnetTree[mapKey])) {
-            addRowTree(subnetTree[mapKey], depth + 1, maxDepth)
+            addRowTree(subnetTree[mapKey], depth + 1, maxDepth,operatingMode)
         } else {
             let subnet_split = mapKey.split('/')
             let notesWidth = '30%';
@@ -143,12 +204,12 @@ function addRowTree(subnetTree, depth, maxDepth) {
             } else if (maxDepth > 20) {
                 notesWidth = '10%';
             }
-            addRow(subnet_split[0], parseInt(subnet_split[1]), (infoColumnCount + maxDepth - depth), (subnetTree[mapKey]['_note'] || ''), notesWidth, (subnetTree[mapKey]['_color'] || ''))
+            addRow(subnet_split[0], parseInt(subnet_split[1]), (infoColumnCount + maxDepth - depth), (subnetTree[mapKey]['_note'] || ''), notesWidth, (subnetTree[mapKey]['_color'] || ''),operatingMode)
         }
     }
 }
 
-function addRow(network, netSize, colspan, note, notesWidth, color) {
+function addRow(network, netSize, colspan, note, notesWidth, color, operatingMode) {
     let addressFirst = ip2int(network)
     let addressLast = subnet_last_address(addressFirst, netSize)
     let usableFirst = subnet_usable_first(addressFirst, netSize, operatingMode)
@@ -216,7 +277,9 @@ function subnet_usable_first(network, netSize, operatingMode) {
     if (netSize < 31) {
         // https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html
         // AWS reserves 3 additional IPs
-        return network + (operatingMode === 'AWS' ? 4 : 1);
+        // https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets
+        // Azure reserves 3 additional IPs
+        return network + (operatingMode == 'Standard' ? 1 : 4);
     } else {
         return network;
     }
@@ -362,7 +425,7 @@ function mutate_subnet_map(verb, network, subnetTree, propValue = '') {
             let netSplit = mapKey.split('/')
             let netSize = parseInt(netSplit[1])
             if (verb === 'split') {
-                if (netSize < minSubnetSize) {
+                if (netSize < minSubnetSizes[operatingMode]) {
                     let new_networks = split_network(netSplit[0], netSize)
                     // Could maybe optimize this for readability with some null coalescing
                     subnetTree[mapKey][new_networks[0]] = {}
@@ -380,6 +443,19 @@ function mutate_subnet_map(verb, network, subnetTree, propValue = '') {
                         subnetTree[mapKey][new_networks[1]]['_color'] = subnetTree[mapKey]['_color']
                     }
                     delete subnetTree[mapKey]['_color']
+                } else {
+                    switch (operatingMode) {
+                        case 'AWS':
+                            var modal_error_message = 'The minimum IPv4 subnet size for AWS is /' + minSubnetSizes[operatingMode] + '.<br/><br/>More Information:<br/><a href="https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html#subnet-sizing-ipv4" target="_blank">Amazon Virtual Private Cloud > User Guide > Subnet CIDR Blocks > Subnet Sizing for IPv4</a>'
+                            break;
+                        case 'AZURE':
+                            var modal_error_message = 'The minimum IPv4 subnet size for Azure is /' + minSubnetSizes[operatingMode] + '.<br/><br/>More Information:<br/><a href="https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#how-small-and-how-large-can-virtual-networks-and-subnets-be" target="_blank">Azure Virtual Network FAQ > How small and how large can virtual networks and subnets be?</a>'
+                            break;
+                        default:
+                            var modal_error_message = 'The minimum size for an IPv4 subnet is /' + minSubnetSizes[operatingMode] + '.<br/><br/>More Information:<br/><a href="https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing" target="_blank">Wikipedia - Classless Inter-Domain Routing</a>'
+                            break;
+                    }
+                    show_warning_modal('<div>' + modal_error_message + '</div>')
                 }
             } else if (verb === 'join') {
                 // Options:
@@ -402,14 +478,170 @@ function mutate_subnet_map(verb, network, subnetTree, propValue = '') {
     }
 }
 
+function switchMode(operatingMode) {
+
+    let isSwitched = true;
+
+    if (subnetMap !== null) {
+        if (validateSubnetSizes(subnetMap, minSubnetSizes[operatingMode])) {
+
+            renderTable(operatingMode);
+            set_usable_ips_title(operatingMode);
+
+            $('#netsize').attr('pattern', netsizePatterns[operatingMode]);
+            $('#input_form').removeClass('was-validated');
+            $('#input_form').rules('remove', 'netsize');
+
+            switch (operatingMode) {
+                case 'AWS':
+                    var validate_error_message = 'AWS Mode - Smallest size is /' + minSubnetSizes[operatingMode]
+                    break;
+                case 'AZURE':
+                    var validate_error_message = 'Azure Mode - Smallest size is /' + minSubnetSizes[operatingMode]
+                    break;
+                default:
+                    var validate_error_message = 'Smallest size is /' + minSubnetSizes[operatingMode]
+                    break;
+            }
+
+
+            // Modify jquery validation rule
+            $('#input_form #netsize').rules('add', {
+                required: true,
+                pattern: netsizePatterns[operatingMode],
+                messages: {
+                    required: 'Please enter a network size',
+                    pattern: validate_error_message
+                }
+            });
+            // Remove active class from all buttons if needed
+            $('#dropdown_standard, #dropdown_azure, #dropdown_aws').removeClass('active');
+            $('#dropdown_' + operatingMode.toLowerCase()).addClass('active');
+            isSwitched = true;
+        } else {
+            switch (operatingMode) {
+                case 'AWS':
+                    var modal_error_message = 'One or more subnets are smaller than the minimum allowed for AWS.<br/>The smallest size allowed is /' + minSubnetSizes[operatingMode] + '.<br/>See: <a href="https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html#subnet-sizing-ipv4" target="_blank">Amazon Virtual Private Cloud > User Guide > Subnet CIDR Blocks > Subnet Sizing for IPv4</a>'
+                    break;
+                case 'AZURE':
+                    var modal_error_message = 'One or more subnets are smaller than the minimum allowed for Azure.<br/>The smallest size allowed is /' + minSubnetSizes[operatingMode] + '.<br/>See: <a href="https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#how-small-and-how-large-can-virtual-networks-and-subnets-be" target="_blank">Azure Virtual Network FAQ > How small and how large can virtual networks and subnets be?</a>'
+                    break;
+                default:
+                    var validate_error_message = 'Unknown Error'
+                    break;
+            }
+            show_warning_modal('<div>' + modal_error_message + '</div>');
+            isSwitched = false;
+        }
+    } else {
+        //unlikely to get here.
+        reset();
+    }
+
+    return isSwitched;
+
+
+}
+
+function validateSubnetSizes(subnetMap, minSubnetSize) {
+    let isValid = true;
+    const validate = (subnetTree) => {
+        for (let key in subnetTree) {
+            if (key.startsWith('_')) continue; // Skip special keys
+            let [_, size] = key.split('/');
+            if (parseInt(size) > minSubnetSize) {
+                isValid = false;
+                return; // Early exit if any subnet is invalid
+            }
+            if (typeof subnetTree[key] === 'object') {
+                validate(subnetTree[key]); // Recursively validate subnets
+            }
+        }
+    };
+    validate(subnetMap);
+    return isValid;
+}
+
+
+function set_usable_ips_title(operatingMode) {
+    switch (operatingMode) {
+        case 'AWS':
+            $('#useableHeader').html('Usable IPs (<a href="https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html#subnet-sizing-ipv4" target="_blank" style="color:#000; border-bottom: 1px dotted #000; text-decoration: dotted" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="AWS reserves 5 addresses in each subnet for platform use.<br/>Click to navigate to the AWS documentation.">AWS</a>)')
+            break;
+        case 'AZURE':
+            $('#useableHeader').html('Usable IPs (<a href="https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets" target="_blank" style="color:#000; border-bottom: 1px dotted #000; text-decoration: dotted" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="Azure reserves 5 addresses in each subnet for platform use.<br/>Click to navigate to the Azure documentation.">Azure</a>)')
+            break;
+        default:
+            $('#useableHeader').html('Usable IPs')
+            break;
+    }
+    $('[data-bs-toggle="tooltip"]').tooltip()
+}
 
 function show_warning_modal(message) {
-    var notifyModal = new bootstrap.Modal(document.getElementById("notifyModal"), {});
+    var notifyModal = new bootstrap.Modal(document.getElementById('notifyModal'), {});
     $('#notifyModal .modal-body').html(message)
     notifyModal.show()
 }
 
 $( document ).ready(function() {
+
+    // Initialize the jQuery Validation on the form
+    var validator = $('#input_form').validate({
+        onfocusout: function (element) {
+            $(element).valid();
+        },
+        rules: {
+            network: {
+                required: true,
+                pattern: '^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+            },
+            netsize: {
+                required: true,
+                pattern: '^([0-9]|[12][0-9]|3[0-2])$'
+            }
+        },
+        messages: {
+            network: {
+                required: 'Please enter a network',
+                pattern: 'Must be a valid IPv4 Address'
+            },
+            netsize: {
+                required: 'Please enter a network size',
+                pattern: 'Smallest size is /32'
+            }
+        },
+        errorPlacement: function(error, element) {
+            console.log(error);
+            console.log(element);
+            if (error[0].innerHTML !== '') {
+                console.log('Error Placement - Text')
+                if (!element.data('errorIsVisible')) {
+                    bootstrap.Tooltip.getInstance(element).setContent({'.tooltip-inner': error[0].innerHTML})
+                    element.tooltip('show');
+                    element.data('errorIsVisible', true)
+                }
+            } else {
+                console.log('Error Placement - Empty')
+                console.log(element);
+                if (element.data('errorIsVisible')) {
+                    element.tooltip('hide');
+                    element.data('errorIsVisible', false)
+                }
+
+            }
+            console.log(element);
+        },
+        // This success function appears to be required as errorPlacement() does not fire without the success function
+        // being defined.
+        success: function(label, element) { },
+        // When the form is valid, add the 'was-validated' class
+        submitHandler: function(form) {
+            form.classList.add('was-validated');
+            form.submit(); // Submit the form
+        }
+    });
+
     let autoConfigResult = processConfigUrl();
     if (!autoConfigResult) {
         reset();
@@ -419,15 +651,26 @@ $( document ).ready(function() {
 });
 
 function exportConfig() {
-    return {
-        'config_version': configVersion,
-        'subnets': subnetMap,
+    if (operatingMode !== 'Standard') {
+        return {
+            'config_version': configVersion,
+            'operating_mode': operatingMode,
+            'subnets': subnetMap,
+        }
+    } else {
+        return {
+            'config_version': configVersion,
+            'subnets': subnetMap,
+        }
     }
 }
 
 function getConfigUrl() {
     let defaultExport = JSON.parse(JSON.stringify(exportConfig()));
     renameKey(defaultExport, 'config_version', 'v')
+    if (defaultExport.hasOwnProperty('operating_mode')) {
+        renameKey(defaultExport, 'operating_mode', 'm')
+    }
     renameKey(defaultExport, 'subnets', 's')
     shortenKeys(defaultExport['s'])
     return '/index.html?c=' + urlVersion + LZString.compressToEncodedURIComponent(JSON.stringify(defaultExport))
@@ -441,14 +684,15 @@ function processConfigUrl() {
         // First character is the version of the URL string, in case the mechanism of encoding changes
         let urlVersion = params['c'].substring(0, 1)
         let urlData = params['c'].substring(1)
-        if (urlVersion === '1') {
-            let urlConfig = JSON.parse(LZString.decompressFromEncodedURIComponent(params['c'].substring(1)))
-            renameKey(urlConfig, 'v', 'config_version')
-            renameKey(urlConfig, 's', 'subnets')
-            expandKeys(urlConfig['subnets'])
-            importConfig(urlConfig)
-            return true
+        let urlConfig = JSON.parse(LZString.decompressFromEncodedURIComponent(params['c'].substring(1)))
+        renameKey(urlConfig, 'v', 'config_version')
+        if (urlConfig.hasOwnProperty('m')) {
+            renameKey(urlConfig, 'm', 'operating_mode')
         }
+        renameKey(urlConfig, 's', 'subnets')
+        expandKeys(urlConfig['subnets'])
+        importConfig(urlConfig)
+        return true
     }
 }
 
@@ -500,13 +744,13 @@ function renameKey(obj, oldKey, newKey) {
 }
 
 function importConfig(text) {
-    // TODO: Probably need error checking here
     if (text['config_version'] === '1') {
         let subnet_split = Object.keys(text['subnets'])[0].split('/')
         $('#network').val(subnet_split[0])
         $('#netsize').val(subnet_split[1])
         subnetMap = text['subnets'];
-        renderTable()
+        operatingMode = text['operating_mode'] || 'Standard'
+        switchMode(operatingMode);
     }
 }
 
