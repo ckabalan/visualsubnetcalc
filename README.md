@@ -45,7 +45,58 @@ Compile from source:
 > npm start
 ```
 
+
+
 The full application should then be available within `./dist/`, open `./dist/index.html` in a browser.
+
+### Run with certificates (Optional)
+
+***NB:*** *required for testing clipboard.writeText() in the browser. Feature is only available in secure (https) mode.*
+
+```shell
+
+#Install mkcert
+> brew install mkcert
+# generate CA Certs to be trusted by local browsers
+> mkcert install
+# generate certs for local development
+> cd visualsubnetcalc/src
+# generate certs for local development
+> npm run setup:certs
+# run the local webserver with https
+> npm run local-secure-start
+````
+
+# Cloud Subnet Notes
+
+- [AWS reserves 3 additional IPs](https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html)
+
+- [Azure reserves 3 additional IPs](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets)
+
+
+## Standard mode:
+   - Smallest subnet: /32
+   - Two reserved addresses per subnet of size <= 30:
+     - Network Address (network + 0)
+     - Broadcast Address (last network address)
+##  AWS mode :
+   - Smallest subnet: /28
+   - Five reserved addresses per subnet:
+     - Network Address (network + 0)
+     - AWS Reserved - VPC Router
+     - AWS Reserved - VPC DNS
+     - AWS Reserved - Future Use
+     - Broadcast Address (last network address)
+## Azure mode :
+   - Smallest subnet: /29
+   - Five reserved addresses per subnet:
+     - Network Address (network + 0)
+     - Azure Reserved - Default Gateway
+     - Azure Reserved - DNS Mapping
+     - Azure Reserved - DNS Mapping
+     - Broadcast Address (last network address)
+
+
 
 ## Credits
 
