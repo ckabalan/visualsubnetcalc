@@ -27,8 +27,8 @@ let noteTimeout;
 let operatingMode = 'Standard'
 let previousOperatingMode = 'Standard'
 let inflightColor = 'NONE'
-let urlVersion = '2'
-let configVersion = '2'
+let urlVersion = '1'
+let configVersion = '1'
 
 const netsizePatterns = {
     Standard: '^([0-9]|[12][0-9]|3[0-2])$',
@@ -446,13 +446,16 @@ function mutate_subnet_map(verb, network, subnetTree, propValue = '') {
                 } else {
                     switch (operatingMode) {
                         case 'AWS':
+                            var modal_error_message = 'The minimum IPv4 subnet size for AWS is /' + minSubnetSizes[operatingMode] + '.<br/><br/>More Information:<br/><a href="https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html#subnet-sizing-ipv4" target="_blank">Amazon Virtual Private Cloud > User Guide > Subnet CIDR Blocks > Subnet Sizing for IPv4</a>'
+                            break;
                         case 'AZURE':
-                            show_warning_modal('<div>Minimum subnet size for ' + operatingMode + ' is ' + minSubnetSizes[operatingMode] + '</div>')
+                            var modal_error_message = 'The minimum IPv4 subnet size for Azure is /' + minSubnetSizes[operatingMode] + '.<br/><br/>More Information:<br/><a href="https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#how-small-and-how-large-can-virtual-networks-and-subnets-be" target="_blank">Azure Virtual Network FAQ > How small and how large can virtual networks and subnets be?</a>'
                             break;
                         default:
-                            show_warning_modal('<div>Minimum subnet size is ' + minSubnetSizes[operatingMode] + '</div>')
+                            var modal_error_message = 'The minimum size for an IPv4 subnet is /' + minSubnetSizes[operatingMode] + '.<br/><br/>More Information:<br/><a href="https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing" target="_blank">Wikipedia - Classless Inter-Domain Routing</a>'
                             break;
-                    }                                    
+                    }
+                    show_warning_modal('<div>' + modal_error_message + '</div>')
                 }
             } else if (verb === 'join') {
                 // Options:
@@ -491,11 +494,13 @@ function switchMode(operatingMode) {
 
             switch (operatingMode) {
                 case 'AWS':
+                    var validate_error_message = "(AWS) Smallest size is /" + minSubnetSizes[operatingMode]
+                    break;
                 case 'AZURE':
-                    var message = "("+operatingMode+") Smallest size is " + minSubnetSizes[operatingMode]
+                    var validate_error_message = "(Azure) Smallest size is /" + minSubnetSizes[operatingMode]
                     break;
                 default:
-                    var message = "Smallest size is " + minSubnetSizes[operatingMode]
+                    var validate_error_message = "Smallest size is /" + minSubnetSizes[operatingMode]
                     break;
             }
 
@@ -506,7 +511,7 @@ function switchMode(operatingMode) {
                 pattern: netsizePatterns[operatingMode],
                 messages: {
                     required: "Please enter a network size",
-                    pattern: message
+                    pattern: validate_error_message
                 }
             });
             // Remove active class from all buttons if needed
@@ -514,7 +519,18 @@ function switchMode(operatingMode) {
             $('#dropdown_' + operatingMode.toLowerCase()).addClass('active');
             isSwitched = true;
         } else {
-            show_warning_modal('<div>Some subnets have a netmask size smaller than the minimum allowed for ' + operatingMode +'.</div><div>The smallest size allowed is ' + minSubnetSizes[operatingMode] + '</div>');
+            switch (operatingMode) {
+                case 'AWS':
+                    var modal_error_message = 'One or more subnets are smaller than the minimum allowed for AWS.<br/>The smallest size allowed is /' + minSubnetSizes[operatingMode] + '.<br/>See: <a href="https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html#subnet-sizing-ipv4" target="_blank">Amazon Virtual Private Cloud > User Guide > Subnet CIDR Blocks > Subnet Sizing for IPv4</a>'
+                    break;
+                case 'AZURE':
+                    var modal_error_message = 'One or more subnets are smaller than the minimum allowed for Azure.<br/>The smallest size allowed is /' + minSubnetSizes[operatingMode] + '.<br/>See: <a href="https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#how-small-and-how-large-can-virtual-networks-and-subnets-be" target="_blank">Azure Virtual Network FAQ > How small and how large can virtual networks and subnets be?</a>'
+                    break;
+                default:
+                    var validate_error_message = "Unknown Error"
+                    break;
+            }
+            show_warning_modal('<div>' + modal_error_message + '</div>');
             isSwitched = false;
         }
     } else {
@@ -611,17 +627,26 @@ $( document ).ready(function() {
 });
 
 function exportConfig() {
-    return {
-        'config_version': configVersion,
-        'operating_mode': operatingMode,
-        'subnets': subnetMap,
+    if (operatingMode !== 'Standard') {
+        return {
+            'config_version': configVersion,
+            'operating_mode': operatingMode,
+            'subnets': subnetMap,
+        }
+    } else {
+        return {
+            'config_version': configVersion,
+            'subnets': subnetMap,
+        }
     }
 }
 
 function getConfigUrl() {
     let defaultExport = JSON.parse(JSON.stringify(exportConfig()));
     renameKey(defaultExport, 'config_version', 'v')
-    renameKey(defaultExport, 'operating_mode', 'm')
+    if (defaultExport.hasOwnProperty('operating_mode')) {
+        renameKey(defaultExport, 'operating_mode', 'm')
+    }
     renameKey(defaultExport, 'subnets', 's')
     shortenKeys(defaultExport['s'])
     return '/index.html?c=' + urlVersion + LZString.compressToEncodedURIComponent(JSON.stringify(defaultExport))
@@ -636,17 +661,14 @@ function processConfigUrl() {
         let urlVersion = params['c'].substring(0, 1)
         let urlData = params['c'].substring(1)
         let urlConfig = JSON.parse(LZString.decompressFromEncodedURIComponent(params['c'].substring(1)))
-
-        if (urlVersion === '2') {
-            renameKey(urlConfig, 'm','operating_mode')
-        }
-
         renameKey(urlConfig, 'v', 'config_version')
+        if (urlConfig.hasOwnProperty('m')) {
+            renameKey(urlConfig, 'm', 'operating_mode')
+        }
         renameKey(urlConfig, 's', 'subnets')
         expandKeys(urlConfig['subnets'])
         importConfig(urlConfig)
         return true
-
     }
 }
 
@@ -698,25 +720,14 @@ function renameKey(obj, oldKey, newKey) {
 }
 
 function importConfig(text) {
-    switch (text['config_version']) {
-        case '1':
-            operatingMode = 'Standard';
-            break;
-        case '2':
-            operatingMode = text['operating_mode'];
-            break;
-        default:
-            // Optionally handle unexpected config_version values
-            show_warning_modal('<div>Invalid operating_mode</div>');
-            reset();
-            break;
+    if (text['config_version'] === '1') {
+        let subnet_split = Object.keys(text['subnets'])[0].split('/')
+        $('#network').val(subnet_split[0])
+        $('#netsize').val(subnet_split[1])
+        subnetMap = text['subnets'];
+        operatingMode = text['operating_mode'] || 'Standard'
+        switchMode(operatingMode);
     }
-
-    let subnet_split = Object.keys(text['subnets'])[0].split('/')
-    $('#network').val(subnet_split[0])
-    $('#netsize').val(subnet_split[1])
-    subnetMap = text['subnets'];
-    switchMode(operatingMode);    
 }
 
 const rgba2hex = (rgba) => `#${rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/).slice(1).map((n, i) => (i === 3 ? Math.round(parseFloat(n) * 255) : parseFloat(n)).toString(16).padStart(2, '0').replace('NaN', '')).join('')}`
