@@ -484,33 +484,33 @@ function switchMode(operatingMode) {
 
     if (subnetMap !== null) {
         if (validateSubnetSizes(subnetMap, minSubnetSizes[operatingMode])) {
-            
+
             renderTable(operatingMode);
             set_usable_ips_title(operatingMode);
 
-            $('#netsize').attr("pattern",netsizePatterns[operatingMode]);
+            $('#netsize').attr('pattern', netsizePatterns[operatingMode]);
             $('#input_form').removeClass('was-validated');
-            $('#input_form').rules("remove", "netsize");   
+            $('#input_form').rules('remove', 'netsize');
 
             switch (operatingMode) {
                 case 'AWS':
-                    var validate_error_message = "AWS Mode - Smallest size is /" + minSubnetSizes[operatingMode]
+                    var validate_error_message = 'AWS Mode - Smallest size is /' + minSubnetSizes[operatingMode]
                     break;
                 case 'AZURE':
-                    var validate_error_message = "Azure Mode - Smallest size is /" + minSubnetSizes[operatingMode]
+                    var validate_error_message = 'Azure Mode - Smallest size is /' + minSubnetSizes[operatingMode]
                     break;
                 default:
-                    var validate_error_message = "Smallest size is /" + minSubnetSizes[operatingMode]
+                    var validate_error_message = 'Smallest size is /' + minSubnetSizes[operatingMode]
                     break;
             }
 
 
             // Modify jquery validation rule
-            $('#input_form #netsize').rules("add", {
+            $('#input_form #netsize').rules('add', {
                 required: true,
                 pattern: netsizePatterns[operatingMode],
                 messages: {
-                    required: "Please enter a network size",
+                    required: 'Please enter a network size',
                     pattern: validate_error_message
                 }
             });
@@ -527,7 +527,7 @@ function switchMode(operatingMode) {
                     var modal_error_message = 'One or more subnets are smaller than the minimum allowed for Azure.<br/>The smallest size allowed is /' + minSubnetSizes[operatingMode] + '.<br/>See: <a href="https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#how-small-and-how-large-can-virtual-networks-and-subnets-be" target="_blank">Azure Virtual Network FAQ > How small and how large can virtual networks and subnets be?</a>'
                     break;
                 default:
-                    var validate_error_message = "Unknown Error"
+                    var validate_error_message = 'Unknown Error'
                     break;
             }
             show_warning_modal('<div>' + modal_error_message + '</div>');
@@ -579,7 +579,7 @@ function set_usable_ips_title(operatingMode) {
 }
 
 function show_warning_modal(message) {
-    var notifyModal = new bootstrap.Modal(document.getElementById("notifyModal"), {});
+    var notifyModal = new bootstrap.Modal(document.getElementById('notifyModal'), {});
     $('#notifyModal .modal-body').html(message)
     notifyModal.show()
 }
@@ -594,21 +594,21 @@ $( document ).ready(function() {
         rules: {
             network: {
                 required: true,
-                pattern: "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+                pattern: '^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
             },
             netsize: {
                 required: true,
-                pattern: "^([0-9]|[12][0-9]|3[0-2])$"
+                pattern: '^([0-9]|[12][0-9]|3[0-2])$'
             }
         },
         messages: {
             network: {
-                required: "Please enter a network",
-                pattern: "Must be a valid IPv4 Address"
+                required: 'Please enter a network',
+                pattern: 'Must be a valid IPv4 Address'
             },
             netsize: {
-                required: "Please enter a network size",
-                pattern: "Smallest size is /32"
+                required: 'Please enter a network size',
+                pattern: 'Smallest size is /32'
             }
         },
         errorPlacement: function(error, element) {
@@ -643,7 +643,7 @@ $( document ).ready(function() {
     });
 
     let autoConfigResult = processConfigUrl();
-    if (!autoConfigResult) { 
+    if (!autoConfigResult) {
         reset();
     }
     //importConfig('{"config_version":"1","subnets":{"10.0.0.0/16":{"10.0.0.0/17":{"10.0.0.0/18":{},"10.0.64.0/18":{}},"10.0.128.0/17":{"10.0.128.0/18":{"10.0.128.0/19":{},"10.0.160.0/19":{"10.0.160.0/20":{"10.0.160.0/21":{"10.0.160.0/22":{},"10.0.164.0/22":{}},"10.0.168.0/21":{}},"10.0.176.0/20":{"10.0.176.0/21":{"10.0.176.0/22":{"10.0.176.0/23":{},"10.0.178.0/23":{}},"10.0.180.0/22":{}},"10.0.184.0/21":{}}}},"10.0.192.0/18":{"10.0.192.0/19":{},"10.0.224.0/19":{}}}}},"notes":{}}')
