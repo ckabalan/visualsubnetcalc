@@ -39,7 +39,19 @@
     <form id="input_form" class="row g-2 mb-3">
         <div class="font-monospace col-lg-2 col-md-3 col-4">
             <div><label for="network" class="form-label mb-0 ms-1">Network Address</label></div>
-            <div><input name="network" id="network" type="text" class="form-control" value="10.0.0.0" aria-label="Network Address" pattern="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" required></div>
+            <div><input data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-custom-class="custom-tooltip"
+                        data-bs-title="Error"
+                        data-bs-trigger="manual"
+                        name="network"
+                        id="network"
+                        type="text"
+                        class="form-control"
+                        value="10.0.0.0"
+                        aria-label="Network Address"
+                        pattern="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+                        required></div>
         </div>
         <div class="font-monospace col-auto">
             <div style="height:2rem"></div>
@@ -47,7 +59,19 @@
         </div>
         <div class="font-monospace col-lg-2 col-md-3 col-4">
             <div><label for="netsize" class="form-label mb-0 ms-1">Network Size</label></div>
-            <div><input name="netsize" id="netsize" type="text" class="form-control w-10" value="16" aria-label="Network Size" pattern="^([0-9]|[12][0-9]|3[0-2])$" required></div>
+            <div><input data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-custom-class="custom-tooltip"
+                        data-bs-title="Error"
+                        data-bs-trigger="manual"
+                        name="netsize"
+                        id="netsize"
+                        type="text"
+                        class="form-control w-10"
+                        value="16"
+                        aria-label="Network Size"
+                        pattern="^([0-9]|[12][0-9]|3[0-2])$"
+                        required></div>
         </div>
         <div class="col-lg-2 col-md-3 col-3 font-">
             <div style="height:1.5rem"></div>
@@ -198,11 +222,11 @@
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"
             integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
             crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js" 
-            integrity="sha384-aEDtD4n2FLrMdE9psop0SHdNyy/W9cBjH22rSRp+3wPHd62Y32uijc0H2eLmgaSn" 
-            crossorigin="anonymous"></script>    
-    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/additional-methods.min.js" 
-            integrity="sha384-kxI94MBt6egf2HqINJ9x8sPSfqxudviPxgttYjlTFaPREJb/gmAOgTr/GYie5ung" 
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.20.1/dist/jquery.validate.min.js"
+            integrity="sha256-0xVRcEF27BnewkTwGDpseENfeitZEOsQAVSlDc7PgG0="
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.20.1/dist/additional-methods.min.js"
+            integrity="sha384-Wxa7enUK34eRCZgjQIh81NeuzGHX2YaEkcLPCBIvASsdqlXBtAvVUiM7Tb56UvtC"
             crossorigin="anonymous"></script>
     <script src="js/lz-string.min.js"></script>
     <script src="js/main.js"></script>
