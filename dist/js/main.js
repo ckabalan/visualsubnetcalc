@@ -5,24 +5,24 @@ let infoColumnCount = 5
 // NORMAL mode:
 //   - Smallest subnet: /32
 //   - Two reserved addresses per subnet of size <= 30:
-//     - Network Address (network + 0)
-//     - Broadcast Address (last network address)
-// AWS mode :
+//     - Net+0 = Network Address
+//     - Last = Broadcast Address
+// AWS mode:
 //   - Smallest subnet: /28
 //   - Two reserved addresses per subnet:
-//     - Network Address (network + 0)
-//     - AWS Reserved - VPC Router
-//     - AWS Reserved - VPC DNS
-//     - AWS Reserved - Future Use
-//     - Broadcast Address (last network address)
-// Azure mode :
+//     - Net+0 = Network Address
+//     - Net+1 = AWS Reserved - VPC Router
+//     - Net+2 = AWS Reserved - VPC DNS
+//     - Net+3 = AWS Reserved - Future Use
+//     - Last = Broadcast Address
+// Azure mode:
 //   - Smallest subnet: /29
 //   - Two reserved addresses per subnet:
-//     - Network Address (network + 0)
-//     - Azure Reserved - Default Gateway
-//     - Azure Reserved - DNS Mapping
-//     - Azure Reserved - DNS Mapping
-//     - Broadcast Address (last network address)
+//     - Net+0 = Network Address
+//     - Net+1 = Reserved - Default Gateway
+//     - Net+2 = Reserved - DNS Mapping
+//     - Net+3 = Reserved - DNS Mapping
+//     - Last = Broadcast Address
 let noteTimeout;
 let operatingMode = 'Standard'
 let previousOperatingMode = 'Standard'
@@ -82,7 +82,7 @@ $('#dropdown_standard').click(function() {
 
     if(!switchMode(operatingMode)) {
         operatingMode = previousOperatingMode;
-        $('#dropdown_'+ operatingMode.toLowerCase()).addClass('active-mode');
+        $('#dropdown_'+ operatingMode.toLowerCase()).addClass('active');
     }
 
 });
@@ -93,7 +93,7 @@ $('#dropdown_azure').click(function() {
 
     if(!switchMode(operatingMode)) {
         operatingMode = previousOperatingMode;
-        $('#dropdown_'+ operatingMode.toLowerCase()).addClass('active-mode');
+        $('#dropdown_'+ operatingMode.toLowerCase()).addClass('active');
     }
 
 });
@@ -104,7 +104,7 @@ $('#dropdown_aws').click(function() {
 
     if(!switchMode(operatingMode)) {
         operatingMode = previousOperatingMode;
-        $('#dropdown_'+ operatingMode.toLowerCase()).addClass('active-mode');
+        $('#dropdown_'+ operatingMode.toLowerCase()).addClass('active');
     }
 });
 
@@ -142,9 +142,9 @@ $('#btn_import_export').on('click', function() {
 })
 
 function reset() {
- 
-    set_popover_content(operatingMode);
-  
+
+    set_usable_ips_title(operatingMode);
+
     let cidrInput = $('#network').val() + '/' + $('#netsize').val()
     let rootNetwork = get_network($('#network').val(), $('#netsize').val())
     let rootCidr = rootNetwork + '/' + $('#netsize').val()
@@ -483,7 +483,7 @@ function switchMode(operatingMode) {
         if (validateSubnetSizes(subnetMap, minSubnetSizes[operatingMode])) {
             
             renderTable(operatingMode);
-            set_popover_content(operatingMode);
+            set_usable_ips_title(operatingMode);
 
             $('#netsize').attr("pattern",netsizePatterns[operatingMode]);
             $('#input_form').removeClass('was-validated');
@@ -510,8 +510,8 @@ function switchMode(operatingMode) {
                 }
             });
             // Remove active class from all buttons if needed
-            $('#dropdown_standard, #dropdown_azure, #dropdown_aws').removeClass('active-mode');
-            $('#dropdown_' + operatingMode.toLowerCase()).addClass('active-mode');    
+            $('#dropdown_standard, #dropdown_azure, #dropdown_aws').removeClass('active');
+            $('#dropdown_' + operatingMode.toLowerCase()).addClass('active');
             isSwitched = true;
         } else {
             show_warning_modal('<div>Some subnets have a netmask size smaller than the minimum allowed for ' + operatingMode +'.</div><div>The smallest size allowed is ' + minSubnetSizes[operatingMode] + '</div>');
@@ -547,39 +547,19 @@ function validateSubnetSizes(subnetMap, minSubnetSize) {
 }
 
 
-function set_popover_content(operatingMode) {
-    var popoverContent = "This column shows the number of usable IP addresses in each subnet.";
-    var popoverTitle = "Usable IPs"
-
+function set_usable_ips_title(operatingMode) {
     switch (operatingMode) {
         case 'AWS':
+            $('#useableHeader').html('Usable IPs (<a href="https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html#subnet-sizing-ipv4" target="_blank" style="color:#000; border-bottom: 1px dotted #000; text-decoration: dotted" data-toggle="tooltip" data-placement="top" data-bs-html="true" title="AWS reserves 5 addresses in each subnet for platform use.<br/>Click to navigate to the AWS documentation.">AWS</a>)')
+            break;
         case 'AZURE':
-            var popoverTitle = "Usable IPs (" + operatingMode + ")";
-            var popoverContent = "This column shows the number of usable IP addresses in each subnet. " + operatingMode + " reserves 5 IP Addresses"
+            $('#useableHeader').html('Usable IPs (<a href="https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets" target="_blank" style="color:#000; border-bottom: 1px dotted #000; text-decoration: dotted" data-toggle="tooltip" data-placement="top" data-bs-html="true" title="Azure reserves 5 addresses in each subnet for platform use.<br/>Click to navigate to the Azure documentation.">Azure</a>)')
             break;
         default:
-            var popoverContent = "This column shows the number of usable IP addresses in each subnet.";
-            var popoverTitle = "Usable IPs"
+            $('#useableHeader').html('Usable IPs')
             break;
     }
-
-    // Ensure the popover is properly disposed
-    $('#useableHeader').popover('dispose');
-
-    // Reinitialize the popover with direct options for title and content
-    $('#useableHeader').popover({
-        trigger: 'hover',
-        html: true,
-        title: function() {
-            // You can compute or fetch the title dynamically here
-            return popoverTitle;
-        },
-        content: function() {
-            // You can compute or fetch the content dynamically here
-            return popoverContent;
-        }
-    });
-
+    $('[data-toggle="tooltip"]').tooltip()
 }
 
 function show_warning_modal(message) {

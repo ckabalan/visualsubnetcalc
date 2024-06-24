@@ -6,7 +6,7 @@
     <title>Visual Subnet Calculator - Split/Join</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link href="css/main.css" rel="stylesheet">
-    <meta name="description" content="Quickly and easily design network layouts. Split and join subnets, add notes and color, then collaborate with others by sharing a custom link to your design. Switch to AWS or Azure Mode to calculate compliant subnets for those Cloud Platforms">
+    <meta name="description" content="Quickly and easily design network layouts. Split and join subnets, add notes and color, then collaborate with others by sharing a custom link to your design.">
     <meta name="robots" content="index, follow" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="icon/favicon-32x32.png">
@@ -58,16 +58,15 @@
                         Tools
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#importExportModal" id="btn_import_export">Import / Export</a></li>
+                        <li><a class="dropdown-item active" href="#" data-bs-toggle="operatingMode" data-bs-target="#operatingMode" id="dropdown_standard" aria-current="true">Mode - Standard</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="operatingMode" data-bs-target="#operatingMode" id="dropdown_aws">Mode - AWS</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="operatingMode" data-bs-target="#operatingMode" id="dropdown_azure">Mode - Azure</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><h6 class="dropdown-header">Mode</h6></li>
-                        <li><a class="dropdown-item active-mode" href="#" data-bs-toggle="operatingMode" data-bs-target="#operatingMode" id="dropdown_standard">Standard</a></li>
-                        <li><a class="dropdown-item" href="#" data-bs-toggle="operatingMode" data-bs-target="#operatingMode" id="dropdown_azure">Azure</a></li>
-                        <li><a class="dropdown-item" href="#" data-bs-toggle="operatingMode" data-bs-target="#operatingMode" id="dropdown_aws">AWS</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#importExportModal" id="btn_import_export">Import / Export</a></li>
                     </ul>
                 </div>
-                </div>
             </div>
+        </div>
     </form>
 
 
@@ -78,15 +77,12 @@
                 <th id="subnetHeader" style="display: table-cell;">Subnet address</th>
                 <th id="netmaskHeader" style="display: none;">Netmask</th>
                 <th id="rangeHeader" style="display: table-cell;">Range of addresses</th>
-                <th id="useableHeader" style="display: table-cell;" data-bs-toggle="popover" title="Usable IPs" data-bs-content="This column shows the number of usable IP addresses in each subnet." data-bs-trigger="hover focus" data-bs-placement="top">Usable IPs</th>
+                <th id="useableHeader" style="display: table-cell;">Usable IPs</th>
                 <th id="hostsHeader" style="display: table-cell;">Hosts</th>
                 <th id="noteHeader" colspan="100%" style="display: table-cell;">
                     Note
                     <div style="float:right;"><span class="split">Split</span>/<span class="join">Join</span></div>
                 </th>
-                <!--
-                <th id="joinHeader" colspan="100%" style="display: table-cell;"><span class="split">Split</span>/<span class="join">Join</span></th>
-                -->
             </tr>
         </thead>
         <tbody id="calcbody">
@@ -210,12 +206,6 @@
             crossorigin="anonymous"></script>
     <script src="js/lz-string.min.js"></script>
     <script src="js/main.js"></script>
-    <script>
-        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-          return new bootstrap.Popover(popoverTriggerEl)
-        })
-      </script>    
 </div>
 </body>
 </html>
