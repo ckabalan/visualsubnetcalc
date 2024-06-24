@@ -36,11 +36,22 @@
         <p class="mb-0">Enter the network you wish to subnet and use the Split/Join buttons on the right to start designing!</p>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-
-    <form id="input_form" class="row g-2 mb-3" novalidate>
+    <form id="input_form" class="row g-2 mb-3">
         <div class="font-monospace col-lg-2 col-md-3 col-4">
             <div><label for="network" class="form-label mb-0 ms-1">Network Address</label></div>
-            <div><input id="network" type="text" class="form-control" value="10.0.0.0" aria-label="Network Address" pattern="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" required></div>
+            <div><input data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-custom-class="custom-tooltip"
+                        data-bs-title="Error"
+                        data-bs-trigger="manual"
+                        name="network"
+                        id="network"
+                        type="text"
+                        class="form-control"
+                        value="10.0.0.0"
+                        aria-label="Network Address"
+                        pattern="^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+                        required></div>
         </div>
         <div class="font-monospace col-auto">
             <div style="height:2rem"></div>
@@ -48,7 +59,19 @@
         </div>
         <div class="font-monospace col-lg-2 col-md-3 col-4">
             <div><label for="netsize" class="form-label mb-0 ms-1">Network Size</label></div>
-            <div><input id="netsize" type="text" class="form-control w-10" value="16" aria-label="Network Size" pattern="^(\d|[12]\d|30)$" required></div>
+            <div><input data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-custom-class="custom-tooltip"
+                        data-bs-title="Error"
+                        data-bs-trigger="manual"
+                        name="netsize"
+                        id="netsize"
+                        type="text"
+                        class="form-control w-10"
+                        value="16"
+                        aria-label="Network Size"
+                        pattern="^([0-9]|[12][0-9]|3[0-2])$"
+                        required></div>
         </div>
         <div class="col-lg-2 col-md-3 col-3 font-">
             <div style="height:1.5rem"></div>
@@ -59,12 +82,17 @@
                         Tools
                     </button>
                     <ul class="dropdown-menu">
+                        <li><a class="dropdown-item active" href="#" data-bs-toggle="operatingMode" data-bs-target="#operatingMode" id="dropdown_standard" aria-current="true">Mode - Standard</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="operatingMode" data-bs-target="#operatingMode" id="dropdown_aws">Mode - AWS</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="operatingMode" data-bs-target="#operatingMode" id="dropdown_azure">Mode - Azure</a></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#importExportModal" id="btn_import_export">Import / Export</a></li>
                     </ul>
                 </div>
             </div>
         </div>
     </form>
+
 
 
     <table id="calc" class="table table-bordered font-monospace">
@@ -77,11 +105,8 @@
                 <th id="hostsHeader" style="display: table-cell;">Hosts</th>
                 <th id="noteHeader" colspan="100%" style="display: table-cell;">
                     Note
-                    <div style="display:inline-block; float:right;"><span class="split">Split</span>/<span class="join">Join</span></div>
+                    <div style="float:right;"><span class="split">Split</span>/<span class="join">Join</span></div>
                 </th>
-                <!--
-                <th id="joinHeader" colspan="100%" style="display: table-cell;"><span class="split">Split</span>/<span class="join">Join</span></th>
-                -->
             </tr>
         </thead>
         <tbody id="calcbody">
@@ -191,11 +216,17 @@
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
             crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"
             integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.20.1/dist/jquery.validate.min.js"
+            integrity="sha256-0xVRcEF27BnewkTwGDpseENfeitZEOsQAVSlDc7PgG0="
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.20.1/dist/additional-methods.min.js"
+            integrity="sha384-Wxa7enUK34eRCZgjQIh81NeuzGHX2YaEkcLPCBIvASsdqlXBtAvVUiM7Tb56UvtC"
             crossorigin="anonymous"></script>
     <script src="js/lz-string.min.js"></script>
     <script src="js/main.js"></script>

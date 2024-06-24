@@ -18,4 +18,10 @@ $new-container-max-widths: (
 
 $container-max-widths: map-merge($container-max-widths, $new-container-max-widths);
 
+.custom-tooltip {
+  --bs-tooltip-bg: var(--bs-danger) !important;
+  --bs-tooltip-color: var(--bs-white) !important;
+  --bs-tooltip-opacity: 1 !important;
+}
+
 @import "../node_modules/bootstrap/scss/bootstrap";
