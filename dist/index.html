@@ -163,14 +163,18 @@
                 </div>
                 <div class="modal-body pt-1">
                     <div class="alert alert-primary show mt-3" role="alert">
-                        Copy the content from the box below to EXPORT the current subnet configuration. Or, overwrite/paste a previously exported configuration into the box below and click IMPORT.
+                        Copy the content from the box below to EXPORT the current subnet configuration. Or, overwrite/paste a previously exported configuration into the box below and click IMPORT. Or Save/Load subnet configuration from local storage.
                     </div>
                     <div class="form-floating font-monospace">
                         <textarea class="form-control pt-3" id="importExportArea" style="height: 510px"></textarea>
                         <label for="importExportArea"></label>
                     </div>
                 </div>
+                <!-- **File Input Element**: A hidden file input element is added to the HTML to serve as a fallback for browsers that do not support the File System Access API. -->               
+                <input type="file" id="fileInput" accept="application/json" style="display: none;">                
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="loadBtn">Load</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="saveBtn">Save</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="importBtn">Import</button>
                 </div>
@@ -230,6 +234,7 @@
             crossorigin="anonymous"></script>
     <script src="js/lz-string.min.js"></script>
     <script src="js/main.js"></script>
+    
 </div>
 </body>
 </html>
