@@ -162,8 +162,15 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body pt-1">
-                    <div class="alert alert-primary show mt-3" role="alert">
-                        Copy the content from the box below to EXPORT the current subnet configuration. Or, overwrite/paste a previously exported configuration into the box below and click IMPORT. Or Save/Load subnet configuration from local storage.
+                    <div class="alert alert-primary alert-dismissible show mt-3" role="alert">
+                        <p class="mb-2"><strong>Option 1: Manual Export/Import</strong></p>
+                        <p class="mb-3">To export: Copy the content from the box below to the clipboard.<br>
+                        To import: Paste a previously exported configuration from the clipboard into the box and click IMPORT.</p>
+                        
+                        <p class="mb-2"><strong>Option 2: Save/Load from Local Storage</strong></p>
+                        <p class="mb-0">Use the SAVE button to store the current configuration locally.<br>
+                        Use the LOAD button to retrieve a saved configuration, then click IMPORT.</p>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     <div class="form-floating font-monospace">
                         <textarea class="form-control pt-3" id="importExportArea" style="height: 510px"></textarea>
@@ -173,8 +180,8 @@
                 <!-- **File Input Element**: A hidden file input element is added to the HTML to serve as a fallback for browsers that do not support the File System Access API. -->               
                 <input type="file" id="fileInput" accept="application/json" style="display: none;">                
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="loadBtn">Load</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="saveBtn">Save</button>
+                    <button type="button" class="btn btn-secondary" id="loadBtn">Load</button>
+                    <button type="button" class="btn btn-secondary" id="saveBtn">Save</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="importBtn">Import</button>
                 </div>
@@ -233,6 +240,8 @@
             integrity="sha384-Wxa7enUK34eRCZgjQIh81NeuzGHX2YaEkcLPCBIvASsdqlXBtAvVUiM7Tb56UvtC"
             crossorigin="anonymous"></script>
     <script src="js/lz-string.min.js"></script>
+    <script src="js/schemas/subnetMap.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.1.0/ajv7.bundle.js" integrity="sha512-PuzkO+wOBh6m/Jux4nXgl2ItRzed77lFDidDX500DUNlvuzr4OrXtsFhN4q0CCxPoXjTFfiw1z4FmED9J/MMdQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="js/main.js"></script>
     
 </div>

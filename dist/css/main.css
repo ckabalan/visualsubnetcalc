@@ -255,3 +255,7 @@
     white-space: nowrap;
     padding-top: 0.25rem;
 }
+
+.custom-modal-dialog {
+    max-width: 80%; /* Adjust the width as needed */
+}

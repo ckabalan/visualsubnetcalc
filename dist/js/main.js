@@ -1,3 +1,4 @@
+
 let subnetMap = {};
 let subnetNotes = {};
 let maxNetSize = 0;
@@ -30,7 +31,12 @@ let inflightColor = 'NONE'
 let urlVersion = '1'
 let configVersion = '1'
 
-//const FileSaver = require('file-saver');
+//const Ajv = require("ajv").default;
+//const ajv = new Ajv.default({ allErrors: true });
+const ajv = new window.ajv7();
+//const ajv = new Ajv({ allErrors: true });
+const validate = ajv.compile(subnetMapSchema);
+
 
 const netsizePatterns = {
     Standard: '^([0-9]|[12][0-9]|3[0-2])$',
@@ -112,7 +118,12 @@ $('#dropdown_aws').click(function() {
 
 
 $('#importBtn').on('click', function() {
-    importConfig(JSON.parse($('#importExportArea').val()))
+    const valid = validate(JSON.parse($('#importExportArea').val()));
+    if (valid) {
+        importConfig(JSON.parse($('#importExportArea').val()))
+    } else {
+        show_warning_modal('<div>Invalid JsonSchema: ' + ajv.errorsText(validate.errors) + '</div>');
+    }
 })
 
 $('#saveBtn').on('click', function() {
@@ -123,7 +134,14 @@ $('#saveBtn').on('click', function() {
 $('#loadBtn').on('click', async function() {
     const config = await loadConfig();
     if (config) {
-        importConfig(config);
+        const valid = validate(config);
+        if (valid) {
+            $('#importExportArea').val(JSON.stringify(config, null, 2))
+        } else {
+            show_warning_modal('<div>Invalid JsonSchema: ' + ajv.errorsText(validate.errors) + '</div>');
+            console.log('Invalid JsonSchema: ' + ajv.errorsText(validate.errors));
+
+        }
     }
 })
 
@@ -596,6 +614,8 @@ function set_usable_ips_title(operatingMode) {
 function show_warning_modal(message) {
     var notifyModal = new bootstrap.Modal(document.getElementById('notifyModal'), {});
     $('#notifyModal .modal-body').html(message)
+    // Add custom class
+    $('#notifyModal .modal-dialog').addClass('custom-modal-dialog');
     notifyModal.show()
 }
 
@@ -776,7 +796,7 @@ async function loadConfig() {
             {
                 description: "Json Files",
                 accept: {
-                "application/json": ["*.json"] 
+                "application/json": [".json"] 
                 },
             },
             ],
