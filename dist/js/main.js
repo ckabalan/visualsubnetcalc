@@ -31,17 +31,15 @@ let inflightColor = 'NONE'
 let urlVersion = '1'
 let configVersion = '1'
 
-//const Ajv = require("ajv").default;
-//const ajv = new Ajv.default({ allErrors: true });
+// Create the Ajv instance and compile the schema
 const ajv = new window.ajv7();
-//const ajv = new Ajv({ allErrors: true });
 const validate = ajv.compile(subnetMapSchema);
 
 
 const netsizePatterns = {
-    Standard: '^([0-9]|[12][0-9]|3[0-2])$',
-    AZURE: '^([0-9]|[12][0-9])$',
-    AWS: '^([0-9]|[12][0-8])$',
+    Standard: '^([12]?[0-9]|3[0-2])$',
+    AZURE: '^([12]?[0-9])$',
+    AWS: '^(1?[0-9]|2[0-8])$',
 };
 
 const minSubnetSizes = {
@@ -134,13 +132,13 @@ $('#saveBtn').on('click', function() {
 $('#loadBtn').on('click', async function() {
     const config = await loadConfig();
     if (config) {
+        // Perform the JSON Schema validation
         const valid = validate(config);
         if (valid) {
             $('#importExportArea').val(JSON.stringify(config, null, 2))
         } else {
-            show_warning_modal('<div>Invalid JsonSchema: ' + ajv.errorsText(validate.errors) + '</div>');
-            console.log('Invalid JsonSchema: ' + ajv.errorsText(validate.errors));
-
+            const errorMessage = formatAjvErrors(validate.errors);
+            show_warning_modal('<div>Invalid JSON Schema:</div><pre>' + errorMessage + '</pre>');
         }
     }
 })
@@ -617,6 +615,17 @@ function show_warning_modal(message) {
     // Add custom class
     $('#notifyModal .modal-dialog').addClass('custom-modal-dialog');
     notifyModal.show()
+}
+
+// Format any Ajv error messages
+function formatAjvErrors(errors) {
+    return errors.map(error => {
+        let message = `${error.instancePath} ${error.message}`;
+        if (error.params.additionalProperty) {
+            message += ` (${error.params.additionalProperty})`;
+        }
+        return message;
+    }).join('\n');
 }
 
 $( document ).ready(function() {

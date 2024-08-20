@@ -41,10 +41,10 @@ const subnetMapSchema = {
       SubnetProperties: {
         type: "object",
         properties: {
-          _note: {
+          _color: {
             type: "string",
           },
-          _color: {
+          _note: {
             type: "string",
           },
         },
