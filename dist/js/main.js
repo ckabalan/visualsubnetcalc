@@ -1,3 +1,4 @@
+
 let subnetMap = {};
 let subnetNotes = {};
 let maxNetSize = 0;
@@ -29,6 +30,11 @@ let previousOperatingMode = 'Standard'
 let inflightColor = 'NONE'
 let urlVersion = '1'
 let configVersion = '1'
+
+// Create the Ajv instance and compile the schema
+const ajv = new window.ajv7();
+const validate = ajv.compile(subnetMapSchema);
+
 
 const netsizePatterns = {
     Standard: '^([12]?[0-9]|3[0-2])$',
@@ -110,8 +116,33 @@ $('#dropdown_aws').click(function() {
 
 
 $('#importBtn').on('click', function() {
-    importConfig(JSON.parse($('#importExportArea').val()))
+    const valid = validate(JSON.parse($('#importExportArea').val()));
+    if (valid) {
+        importConfig(JSON.parse($('#importExportArea').val()))
+    } else {
+        show_warning_modal('<div>Invalid JsonSchema: ' + ajv.errorsText(validate.errors) + '</div>');
+    }
 })
+
+$('#saveBtn').on('click', function() {
+    const jsonContent = JSON.parse($('#importExportArea').val());
+    saveConfig(jsonContent);
+})
+
+$('#loadBtn').on('click', async function() {
+    const config = await loadConfig();
+    if (config) {
+        // Perform the JSON Schema validation
+        const valid = validate(config);
+        if (valid) {
+            $('#importExportArea').val(JSON.stringify(config, null, 2))
+        } else {
+            const errorMessage = formatAjvErrors(validate.errors);
+            show_warning_modal('<div>Invalid JSON Schema:</div><pre>' + errorMessage + '</pre>');
+        }
+    }
+})
+
 
 $('#bottom_nav #colors_word_open').on('click', function() {
     $('#bottom_nav #color_palette').removeClass('d-none');
@@ -581,7 +612,20 @@ function set_usable_ips_title(operatingMode) {
 function show_warning_modal(message) {
     var notifyModal = new bootstrap.Modal(document.getElementById('notifyModal'), {});
     $('#notifyModal .modal-body').html(message)
+    // Add custom class
+    $('#notifyModal .modal-dialog').addClass('custom-modal-dialog');
     notifyModal.show()
+}
+
+// Format any Ajv error messages
+function formatAjvErrors(errors) {
+    return errors.map(error => {
+        let message = `${error.instancePath} ${error.message}`;
+        if (error.params.additionalProperty) {
+            message += ` (${error.params.additionalProperty})`;
+        }
+        return message;
+    }).join('\n');
 }
 
 $( document ).ready(function() {
@@ -751,6 +795,103 @@ function importConfig(text) {
         subnetMap = text['subnets'];
         operatingMode = text['operating_mode'] || 'Standard'
         switchMode(operatingMode);
+    }
+}
+
+async function loadConfig() {
+    if (window.showOpenFilePicker) {   
+        const pickerOpts = {
+            types: [
+            {
+                description: "Json Files",
+                accept: {
+                "application/json": [".json"] 
+                },
+            },
+            ],
+            excludeAcceptAllOption: true,
+            multiple: false,
+        };    
+
+        
+        try {
+            const [fileHandle] = await window.showOpenFilePicker(pickerOpts);
+            const file = await fileHandle.getFile();
+            const fileContent = await file.text();
+            return JSON.parse(fileContent);
+        } catch (err) {
+            console.error("Error loading file:", err);
+            show_warning_modal('<div>Failed to load the file. Please try again.</div>');
+        }
+    } else {
+        // Fallback for browsers that do not support the File System Access API
+        return new Promise((resolve, reject) => {
+            const fileInput = document.getElementById('fileInput');
+            fileInput.onchange = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const config = JSON.parse(e.target.result);
+                            resolve(config);
+                        } catch (err) {
+                            console.error("Error parsing file:", err);
+                            show_warning_modal('<div>Failed to parse the file. Please ensure it is a valid JSON file.</div>');
+                            reject(err);
+                        }
+                    };
+                    reader.onerror = (err) => {
+                        console.error("Error reading file:", err);
+                        show_warning_modal('<div>Failed to read the file. Please try again.</div>');
+                        reject(err);
+                    };
+                    reader.readAsText(file);
+                } else {
+                    reject(new Error("No file selected"));
+                }
+            };
+            fileInput.click();
+        });
+    }
+
+}
+
+async function saveConfig(jsonContent) {
+    const fileName = "subnetMap.json";
+    const fileContent = JSON.stringify(jsonContent, null, 2);
+    const blob = new Blob([fileContent], { type: "application/json" });
+
+    if (window.showSaveFilePicker) {
+        const pickerOpts = {
+            suggestedName: fileName,
+            types: [
+                {
+                    description: "JSON Files",
+                    accept: {
+                        "application/json": [".json"]
+                    }
+                }
+            ]
+        };
+
+        try {
+            const fileHandle = await window.showSaveFilePicker(pickerOpts);
+            const writableStream = await fileHandle.createWritable();
+            await writableStream.write(blob);
+            await writableStream.close();
+        } catch (err) {
+            console.error("Error saving file:", err);
+            show_warning_modal('<div>Failed to save the file. Please try again.</div>');
+        }
+    } else {
+        // Fallback for browsers that do not support the File System Access API
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 }
 
