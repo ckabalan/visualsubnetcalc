@@ -164,6 +164,36 @@ $('#calcbody').on('click', 'td.split,td.join', function(event) {
     renderTable(operatingMode);
 })
 
+// Keyboard shortcuts for Split and Join
+$('#calcbody').on('keydown', 'td.note input', function(event) {
+    // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
+    if (event.ctrlKey && event.key === 'l') {
+        clearTimeout(noteTimeout);
+        mutate_subnet_map('note', this.dataset.subnet, '', this.value);
+        renderTable(operatingMode);
+
+        mutate_subnet_map('split', this.dataset.subnet, '');
+        renderTable(operatingMode);
+
+        let networkSplit = this.dataset.subnet.split('/');
+        let newInput = $('#calcbody td.note input[data-subnet="' + networkSplit[0] + '/' + (parseInt(networkSplit[1]) + 1) + '"]')
+        newInput.focus();
+        newInput[0].setSelectionRange(this.selectionStart, this.selectionStart);
+    } else if (event.ctrlKey && event.key === 'j') {
+        clearTimeout(noteTimeout);
+        mutate_subnet_map('note', this.dataset.subnet, '', this.value);
+        renderTable(operatingMode);
+
+        let parentNetwork = get_network_parent(subnetMap, this.dataset.subnet);
+        mutate_subnet_map('join', parentNetwork, '');
+        renderTable(operatingMode);
+
+        let newInput = $('#calcbody td.note input[data-subnet="' + parentNetwork + '"]')
+        newInput.focus();
+        newInput[0].setSelectionRange(this.selectionStart, this.selectionStart);
+    }
+})
+
 $('#calcbody').on('keyup', 'td.note input', function(event) {
     // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
     let delay = 1000;
@@ -357,6 +387,26 @@ function get_network_children(network, subnetTree) {
         }
     }
     return subnetList
+}
+
+
+function get_network_parent(subnetTree, targetNetwork) {
+    for (let mapKey in subnetTree) {
+        if (mapKey.startsWith('_')) { continue; }
+        if (has_network_sub_keys(subnetTree[mapKey])) {
+            let parentNetwork = get_network_parent(subnetTree[mapKey], targetNetwork)
+            if (parentNetwork !== '') {
+                return parentNetwork
+            }
+        } else {
+            if (mapKey === targetNetwork) {
+                let networkSplit = Object.keys(subnetTree)[0].split('/')
+                let parentNetwork = networkSplit[0] + '/' + (parseInt(networkSplit[1]) - 1)
+                return parentNetwork
+            }
+        }
+    }
+    return ''
 }
 
 function get_matching_network_list(network, subnetTree) {
