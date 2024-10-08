@@ -105,3 +105,4 @@ Split icon made by [Freepik](https://www.flaticon.com/authors/freepik) from [Fla
 ## License
 
 Visual Subnet Calculator is released under the [MIT License](https://opensource.org/licenses/MIT)
+
