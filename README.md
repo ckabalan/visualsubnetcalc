@@ -33,10 +33,12 @@ Compile from source:
 ```shell
 # Clone the repository
 > git clone https://github.com/ckabalan/visualsubnetcalc
+# Change to the repository directory
+> cd visualsubnetcalc
 # Use recommended NVM version
 > nvm use
 # Change to the sources directory
-> cd visualsubnetcalc/src
+> cd src
 # Install Bootstrap
 > npm install
 # Compile Bootstrap (Also install sass command line globally)
