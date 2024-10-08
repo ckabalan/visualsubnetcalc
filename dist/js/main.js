@@ -31,9 +31,9 @@ let urlVersion = '1'
 let configVersion = '1'
 
 const netsizePatterns = {
-    Standard: '^([0-9]|[12][0-9]|3[0-2])$',
-    AZURE: '^([0-9]|[12][0-9])$',
-    AWS: '^([0-9]|[12][0-8])$',
+    Standard: '^([12]?[0-9]|3[0-2])$',
+    AZURE: '^([12]?[0-9])$',
+    AWS: '^(1?[0-9]|2[0-8])$',
 };
 
 const minSubnetSizes = {
