@@ -28,7 +28,7 @@ let operatingMode = 'Standard'
 let previousOperatingMode = 'Standard'
 let inflightColor = 'NONE'
 let urlVersion = '1'
-let configVersion = '1'
+let configVersion = '2'
 
 const netsizePatterns = {
     Standard: '^([12]?[0-9]|3[0-2])$',
@@ -138,7 +138,7 @@ $('#bottom_nav #copy_url').on('click', function() {
 })
 
 $('#btn_import_export').on('click', function() {
-    $('#importExportArea').val(JSON.stringify(exportConfig(), null, 2))
+    $('#importExportArea').val(JSON.stringify(exportConfig(false), null, 2))
 })
 
 function reset() {
@@ -262,7 +262,93 @@ function ip2int(ip) {
 }
 
 function int2ip (ipInt) {
-    return ( (ipInt>>>24) +'.' + (ipInt>>16 & 255) +'.' + (ipInt>>8 & 255) +'.' + (ipInt & 255) );
+    return ((ipInt>>>24) + '.' + (ipInt>>16 & 255) + '.' + (ipInt>>8 & 255) + '.' + (ipInt & 255));
+}
+
+function toBase32(num) {
+    return num.toString(32);
+}
+
+function fromBase32(str) {
+    return parseInt(str, 32);
+}
+
+/**
+ * Coordinate System for Subnet Representation
+ *
+ * This system aims to represent subnets efficiently within a larger network space.
+ * The goal is to produce the shortest possible string representation for subnets,
+ * which is particularly effective when dealing with hierarchical network designs.
+ *
+ * Key concept:
+ * - We represent a subnet by its ordinal position within a larger network,
+ *   along with its mask size.
+ * - This approach is most efficient when subnets are relatively close together
+ *   in the address space and of similar sizes.
+ *
+ * Benefits:
+ * 1. Compact representation: Often results in very short strings (e.g., "7k").
+ * 2. Hierarchical: Naturally represents subnet hierarchy.
+ * 3. Efficient for common cases: Works best for typical network designs where
+ *    subnets are grouped and of similar sizes.
+ *
+ * Trade-offs:
+ * - Less efficient for representing widely dispersed or highly varied subnet sizes.
+ * - Requires knowledge of the base network to interpret.
+ *
+ * Extreme Example... Representing the value 192.168.200.210/31 within the base
+ * network of 192.168.200.192/27. These are arbitrary but long subnets to represent
+ * as a string.
+ * - Normal Way - '192.168.200.210/31'
+ * - Nth Position Way - '9v'
+ *   - '9' represents the 9th /31 subnet within the /27
+ *   - 'v' represents the /31 mask size converted to Base 32 (31 -> 'v')
+ */
+
+/**
+ * Converts a specific subnet to its Nth position representation within a base network.
+ *
+ * @param {string} baseNetwork - The larger network containing the subnet (e.g., "10.0.0.0/16")
+ * @param {string} specificSubnet - The subnet to be represented (e.g., "10.0.112.0/20")
+ * @returns {string} A compact string representing the subnet's position and size (e.g., "7k")
+ */
+function getNthSubnet(baseNetwork, specificSubnet) {
+    const [baseIp, baseMask] = baseNetwork.split('/');
+    const [specificIp, specificMask] = specificSubnet.split('/');
+
+    const baseInt = ip2int(baseIp);
+    const specificInt = ip2int(specificIp);
+
+    const baseSize = 32 - parseInt(baseMask, 10);
+    const specificSize = 32 - parseInt(specificMask, 10);
+
+    const offset = specificInt - baseInt;
+    const nthSubnet = offset >>> specificSize;
+
+    return `${nthSubnet}${toBase32(parseInt(specificMask, 10))}`;
+}
+
+
+/**
+ * Reconstructs a subnet from its Nth position representation within a base network.
+ *
+ * @param {string} baseNetwork - The larger network containing the subnet (e.g., "10.0.0.0/16")
+ * @param {string} nthString - The compact representation of the subnet (e.g., "7k")
+ * @returns {string} The full subnet representation (e.g., "10.0.112.0/20")
+ */
+// Takes 10.0.0.0/16 and '7k' and returns 10.0.96.0/20
+// '10.0.96.0/20' being the 7th /20 (base32 'k' is 20 int) within the /16.
+function getSubnetFromNth(baseNetwork, nthString) {
+    const [baseIp, baseMask] = baseNetwork.split('/');
+    const baseInt = ip2int(baseIp);
+
+    const size = fromBase32(nthString.slice(-1));
+    const nth = parseInt(nthString.slice(0, -1), 10);
+
+    const innerSizeInt = 32 - size;
+    const subnetInt = baseInt + (nth << innerSizeInt);
+
+    return `${int2ip(subnetInt)}/${size}`;
 }
 
 function subnet_last_address(subnet, netSize) {
@@ -320,7 +406,7 @@ function has_network_sub_keys(dict) {
     let allKeys = Object.keys(dict)
     // Maybe an efficient way to do this with a Lambda?
     for (let i in allKeys) {
-        if (!allKeys[i].startsWith('_')) {
+        if (!allKeys[i].startsWith('_') && allKeys[i] !== 'n' && allKeys[i] !== 'c') {
             return true
         }
     }
@@ -646,33 +732,40 @@ $( document ).ready(function() {
     if (!autoConfigResult) {
         reset();
     }
-    //importConfig('{"config_version":"1","subnets":{"10.0.0.0/16":{"10.0.0.0/17":{"10.0.0.0/18":{},"10.0.64.0/18":{}},"10.0.128.0/17":{"10.0.128.0/18":{"10.0.128.0/19":{},"10.0.160.0/19":{"10.0.160.0/20":{"10.0.160.0/21":{"10.0.160.0/22":{},"10.0.164.0/22":{}},"10.0.168.0/21":{}},"10.0.176.0/20":{"10.0.176.0/21":{"10.0.176.0/22":{"10.0.176.0/23":{},"10.0.178.0/23":{}},"10.0.180.0/22":{}},"10.0.184.0/21":{}}}},"10.0.192.0/18":{"10.0.192.0/19":{},"10.0.224.0/19":{}}}}},"notes":{}}')
-    //importConfig('{"config_version":"1","subnets":{"10.0.0.0/16":{"10.0.0.0/17":{"10.0.0.0/18":{"_note":"Note 1"},"10.0.64.0/18":{"_note":"Note 2"}},"10.0.128.0/17":{"10.0.128.0/18":{"10.0.128.0/19":{"_note":"Note 3"},"10.0.160.0/19":{"10.0.160.0/20":{"10.0.160.0/21":{"10.0.160.0/22":{"_note":"Note 4"},"10.0.164.0/22":{"_note":"Note 5"}},"10.0.168.0/21":{"_note":"Note 6"}},"10.0.176.0/20":{"10.0.176.0/21":{"10.0.176.0/22":{"10.0.176.0/23":{"_note":"Note 7"},"10.0.178.0/23":{"_note":"Note 8"}},"10.0.180.0/22":{"_note":"Note 9"}},"10.0.184.0/21":{"_note":"Note 10"}}}},"10.0.192.0/18":{"10.0.192.0/19":{"_note":"Note 11"},"10.0.224.0/19":{"_note":"Note 12"}}}}},"notes":{}}')
 });
 
-function exportConfig() {
+function exportConfig(isMinified = true) {
+    const baseNetwork = Object.keys(subnetMap)[0]
+    let miniSubnetMap = {};
+    if (isMinified) {
+        minifySubnetMap(miniSubnetMap, subnetMap, baseNetwork)
+    }
     if (operatingMode !== 'Standard') {
         return {
             'config_version': configVersion,
             'operating_mode': operatingMode,
-            'subnets': subnetMap,
+            'base_network': baseNetwork,
+            'subnets': isMinified ? miniSubnetMap : subnetMap,
         }
     } else {
         return {
             'config_version': configVersion,
-            'subnets': subnetMap,
+            'base_network': baseNetwork,
+            'subnets': isMinified ? miniSubnetMap : subnetMap,
         }
     }
 }
 
 function getConfigUrl() {
-    let defaultExport = JSON.parse(JSON.stringify(exportConfig()));
+    // Deep Copy
+    let defaultExport = JSON.parse(JSON.stringify(exportConfig(true)));
     renameKey(defaultExport, 'config_version', 'v')
+    renameKey(defaultExport, 'base_network', 'b')
     if (defaultExport.hasOwnProperty('operating_mode')) {
         renameKey(defaultExport, 'operating_mode', 'm')
     }
     renameKey(defaultExport, 'subnets', 's')
-    shortenKeys(defaultExport['s'])
+    console.log(JSON.stringify(defaultExport))
     return '/index.html?c=' + urlVersion + LZString.compressToEncodedURIComponent(JSON.stringify(defaultExport))
 }
 
@@ -690,31 +783,63 @@ function processConfigUrl() {
             renameKey(urlConfig, 'm', 'operating_mode')
         }
         renameKey(urlConfig, 's', 'subnets')
-        expandKeys(urlConfig['subnets'])
+        if (urlConfig['config_version'] === '1') {
+            // Version 1 Configs used full subnet strings as keys and just shortned the _note->_n and _color->_c keys
+            expandKeys(urlConfig['subnets'])
+        } else if (urlConfig['config_version'] === '2') {
+            // Version 2 Configs uses the Nth Position representation for subnet keys and requires the base_network
+            // option. It also uses n/c for note/color
+            if (urlConfig.hasOwnProperty('b')) {
+                renameKey(urlConfig, 'b', 'base_network')
+            }
+            let expandedSubnetMap = {};
+            expandSubnetMap(expandedSubnetMap, urlConfig['subnets'], urlConfig['base_network'])
+            urlConfig['subnets'] = expandedSubnetMap
+        }
         importConfig(urlConfig)
         return true
     }
 }
 
-function shortenKeys(subnetTree) {
-    for (let mapKey in subnetTree) {
-        if (mapKey.startsWith('_')) {
-            continue;
-        }
-        if (has_network_sub_keys(subnetTree[mapKey])) {
-            shortenKeys(subnetTree[mapKey])
-        } else {
-            if (subnetTree[mapKey].hasOwnProperty('_note')) {
-                renameKey(subnetTree[mapKey], '_note', '_n')
-            }
-            if (subnetTree[mapKey].hasOwnProperty('_color')) {
-                renameKey(subnetTree[mapKey], '_color', '_c')
-            }
+function minifySubnetMap(minifiedMap, referenceMap, baseNetwork) {
+    for (let subnet in referenceMap) {
+        if (subnet.startsWith('_')) continue;
 
+        const nthRepresentation = getNthSubnet(baseNetwork, subnet);
+        minifiedMap[nthRepresentation] = {}
+        if (referenceMap[subnet].hasOwnProperty('_note')) {
+            minifiedMap[nthRepresentation]['n'] = referenceMap[subnet]['_note']
+        }
+        if (referenceMap[subnet].hasOwnProperty('_color')) {
+            minifiedMap[nthRepresentation]['c'] = referenceMap[subnet]['_color']
+        }
+        if (Object.keys(referenceMap[subnet]).some(key => !key.startsWith('_'))) {
+            minifySubnetMap(minifiedMap[nthRepresentation], referenceMap[subnet], baseNetwork);
         }
     }
 }
 
+function expandSubnetMap(expandedMap, miniMap, baseNetwork) {
+    for (let mapKey in miniMap) {
+        if (mapKey === 'n' || mapKey === 'c') {
+            continue;
+        }
+        let subnetKey = getSubnetFromNth(baseNetwork, mapKey)
+        expandedMap[subnetKey] = {}
+        if (has_network_sub_keys(miniMap[mapKey])) {
+            expandSubnetMap(expandedMap[subnetKey], miniMap[mapKey], baseNetwork)
+        } else {
+            if (miniMap[mapKey].hasOwnProperty('n')) {
+                expandedMap[subnetKey]['_note'] = miniMap[mapKey]['n']
+            }
+            if (miniMap[mapKey].hasOwnProperty('c')) {
+                expandedMap[subnetKey]['_color'] = miniMap[mapKey]['c']
+            }
+        }
+    }
+}
+
+// For Config Version 1 Backwards Compatibility
 function expandKeys(subnetTree) {
     for (let mapKey in subnetTree) {
         if (mapKey.startsWith('_')) {
@@ -734,7 +859,6 @@ function expandKeys(subnetTree) {
     }
 }
 
-
 function renameKey(obj, oldKey, newKey) {
     if (oldKey !== newKey) {
     Object.defineProperty(obj, newKey,
@@ -745,13 +869,16 @@ function renameKey(obj, oldKey, newKey) {
 
 function importConfig(text) {
     if (text['config_version'] === '1') {
-        let subnet_split = Object.keys(text['subnets'])[0].split('/')
-        $('#network').val(subnet_split[0])
-        $('#netsize').val(subnet_split[1])
-        subnetMap = text['subnets'];
-        operatingMode = text['operating_mode'] || 'Standard'
-        switchMode(operatingMode);
+        var [subnetNet, subnetSize] = Object.keys(text['subnets'])[0].split('/')
+    } else if (text['config_version'] === '2') {
+        var [subnetNet, subnetSize] = text['base_network'].split('/')
     }
+    $('#network').val(subnetNet)
+    $('#netsize').val(subnetSize)
+    subnetMap = text['subnets'];
+    operatingMode = text['operating_mode'] || 'Standard'
+    switchMode(operatingMode);
+
 }
 
 const rgba2hex = (rgba) => `#${rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/).slice(1).map((n, i) => (i === 3 ? Math.round(parseFloat(n) * 255) : parseFloat(n)).toString(16).padStart(2, '0').replace('NaN', '')).join('')}`
