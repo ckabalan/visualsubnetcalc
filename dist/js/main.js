@@ -42,11 +42,26 @@ const minSubnetSizes = {
     AWS: 28,
 };
 
+$('input#network').on('paste', function (e) {
+    let pastedData = window.event.clipboardData.getData('text')
+    if (pastedData.includes('/')) {
+        let [network, netSize] = pastedData.split('/')
+        $('#network').val(network)
+        $('#netsize').val(netSize)
+    }
+    e.preventDefault()
+});
+
+$("input#network").on('keydown', function (e) {
+    if (e.key === '/') {
+        e.preventDefault()
+        $('input#netsize').focus().select()
+    }
+});
 
 $('input#network,input#netsize').on('input', function() {
     $('#input_form')[0].classList.add('was-validated');
 })
-
 
 $('#color_palette div').on('click', function() {
     // We don't really NEED to convert this to hex, but it's really low overhead to do the
@@ -731,25 +746,25 @@ $( document ).ready(function() {
             }
         },
         errorPlacement: function(error, element) {
-            console.log(error);
-            console.log(element);
+            //console.log(error);
+            //console.log(element);
             if (error[0].innerHTML !== '') {
-                console.log('Error Placement - Text')
+                //console.log('Error Placement - Text')
                 if (!element.data('errorIsVisible')) {
                     bootstrap.Tooltip.getInstance(element).setContent({'.tooltip-inner': error[0].innerHTML})
                     element.tooltip('show');
                     element.data('errorIsVisible', true)
                 }
             } else {
-                console.log('Error Placement - Empty')
-                console.log(element);
+                //console.log('Error Placement - Empty')
+                //console.log(element);
                 if (element.data('errorIsVisible')) {
                     element.tooltip('hide');
                     element.data('errorIsVisible', false)
                 }
 
             }
-            console.log(element);
+            //console.log(element);
         },
         // This success function appears to be required as errorPlacement() does not fire without the success function
         // being defined.
