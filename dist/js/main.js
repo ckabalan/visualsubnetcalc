@@ -313,12 +313,12 @@ function int2ip (ipInt) {
     return ((ipInt>>>24) + '.' + (ipInt>>16 & 255) + '.' + (ipInt>>8 & 255) + '.' + (ipInt & 255));
 }
 
-function toBase32(num) {
-    return num.toString(32);
+function toBase36(num) {
+    return num.toString(36);
 }
 
-function fromBase32(str) {
-    return parseInt(str, 32);
+function fromBase36(str) {
+    return parseInt(str, 36);
 }
 
 /**
@@ -350,7 +350,7 @@ function fromBase32(str) {
  * - Normal Way - '192.168.200.210/31'
  * - Nth Position Way - '9v'
  *   - '9' represents the 9th /31 subnet within the /27
- *   - 'v' represents the /31 mask size converted to Base 32 (31 -> 'v')
+ *   - 'v' represents the /31 mask size converted to Base 36 (31 -> 'v')
  */
 
 /**
@@ -373,7 +373,7 @@ function getNthSubnet(baseNetwork, specificSubnet) {
     const offset = specificInt - baseInt;
     const nthSubnet = offset >>> specificSize;
 
-    return `${nthSubnet}${toBase32(parseInt(specificMask, 10))}`;
+    return `${nthSubnet}${toBase36(parseInt(specificMask, 10))}`;
 }
 
 
@@ -385,12 +385,12 @@ function getNthSubnet(baseNetwork, specificSubnet) {
  * @returns {string} The full subnet representation (e.g., "10.0.112.0/20")
  */
 // Takes 10.0.0.0/16 and '7k' and returns 10.0.96.0/20
-// '10.0.96.0/20' being the 7th /20 (base32 'k' is 20 int) within the /16.
+// '10.0.96.0/20' being the 7th /20 (base36 'k' is 20 int) within the /16.
 function getSubnetFromNth(baseNetwork, nthString) {
     const [baseIp, baseMask] = baseNetwork.split('/');
     const baseInt = ip2int(baseIp);
 
-    const size = fromBase32(nthString.slice(-1));
+    const size = fromBase36(nthString.slice(-1));
     const nth = parseInt(nthString.slice(0, -1), 10);
 
     const innerSizeInt = 32 - size;
