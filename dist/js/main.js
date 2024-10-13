@@ -813,7 +813,7 @@ function getConfigUrl() {
         renameKey(defaultExport, 'operating_mode', 'm')
     }
     renameKey(defaultExport, 'subnets', 's')
-    console.log(JSON.stringify(defaultExport))
+    //console.log(JSON.stringify(defaultExport))
     return '/index.html?c=' + urlVersion + LZString.compressToEncodedURIComponent(JSON.stringify(defaultExport))
 }
 
