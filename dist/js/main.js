@@ -150,12 +150,45 @@ function reset() {
     let rootCidr = rootNetwork + '/' + $('#netsize').val()
     if (cidrInput !== rootCidr) {
         show_warning_modal('<div>Your network input is not on a network boundary for this network size. It has been automatically changed:</div><div class="font-monospace pt-2">' + $('#network').val() + ' -> ' + rootNetwork + '</div>')
+        $('#network').val(rootNetwork)
+        cidrInput = $('#network').val() + '/' + $('#netsize').val()
     }
-    $('#network').val(rootNetwork)
-    subnetMap = {}
-    subnetMap[rootCidr] = {}
+    if (Object.keys(subnetMap).length > 0) {
+        // This page already has data imported, so lets see if we can just change the range
+        if (isMatchingSize(Object.keys(subnetMap)[0], cidrInput)) {
+            subnetMap = changeBaseNetwork(cidrInput)
+        } else {
+            // This is a page with existing data of a different subnet size, so make it blank
+            // Could be an opportunity here to do the following:
+            //   - Prompt the user to confirm they want to clear the existing data
+            //   - Resize the existing data anyway by making the existing network a subnetwork of their new input (if it
+            //     is a larger network), or by just trimming the network to the new size (if it is a smaller network),
+            //     or even resizing all of the containing networks by change in size of the base network. For example a
+            //     base network going from /16 -> /18 would be all containing networks would be resized smaller (/+2),
+            //     or bigger (/-2) if going from /18 -> /16.
+            subnetMap = {}
+            subnetMap[rootCidr] = {}
+        }
+    } else {
+        // This is a fresh page load with no existing data
+        subnetMap[rootCidr] = {}
+    }
     maxNetSize = parseInt($('#netsize').val())
     renderTable(operatingMode);
+}
+
+function changeBaseNetwork(newBaseNetwork) {
+    // Minifiy it, to make all the keys in the subnetMap relative to their original base network
+    // Then expand it, but with the new CIDR as the base network, effectively converting from old to new.
+    let miniSubnetMap = {}
+    minifySubnetMap(miniSubnetMap, subnetMap, Object.keys(subnetMap)[0])
+    let newSubnetMap = {}
+    expandSubnetMap(newSubnetMap, miniSubnetMap, newBaseNetwork)
+    return newSubnetMap
+}
+
+function isMatchingSize(subnet1, subnet2) {
+    return subnet1.split('/')[1] === subnet2.split('/')[1];
 }
 
 $('#calcbody').on('click', 'td.split,td.join', function(event) {
