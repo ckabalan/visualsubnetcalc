@@ -114,7 +114,7 @@
                 <td aria-labelledby="rangeHeader" class="row_range"></td>
                 <td aria-labelledby="useableHeader" class="row_usable"></td>
                 <td aria-labelledby="hostsHeader" class="row_hosts"></td>
-                <td aria-labelledby="noteHeader" class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td class="note"><label><input aria-labelledby="noteHeader" type="text" class="form-control shadow-none p-0"></label></td>
                 <td aria-labelledby="splitHeader" rowspan="1" colspan="13" class="split rotate"><span></span></td>
                 <td aria-labelledby="joinHeader" rowspan="14" colspan="1" class="join rotate"><span></span></td>
             </tr>
@@ -153,19 +153,19 @@
         </div>
     </div>
 
-    <div class="modal fade" id="importExportModal" tabindex="-1" aria-labelledby="importExportModalLabel" aria-hidden="true">
+    <div class="modal fade" id="importExportModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content">
+            <div class="modal-content" role="alertdialog" aria-labelledby="importExportModalLabel" aria-describedby="importExportModalDescription">
                 <div class="modal-header border-bottom-0 pb-1">
                     <h3 class="modal-title" id="importExportModalLabel">Import/Export</h3>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body pt-1">
-                    <div class="alert alert-primary show mt-3" role="alert">
+                    <div class="alert alert-primary show mt-3" id="importExportModalDescription">
                         Copy the content from the box below to EXPORT the current subnet configuration. Or, overwrite/paste a previously exported configuration into the box below and click IMPORT.
                     </div>
                     <div class="form-floating font-monospace">
-                        <textarea class="form-control pt-3" id="importExportArea" style="height: 510px"></textarea>
+                        <textarea class="form-control pt-3" id="importExportArea" style="height: 510px" aria-label="Import/Export Content"></textarea>
                         <label for="importExportArea"></label>
                     </div>
                 </div>
