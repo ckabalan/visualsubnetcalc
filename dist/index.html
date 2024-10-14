@@ -95,29 +95,28 @@
 
 
 
-    <table id="calc" class="table table-bordered font-monospace">
+    <table id="calc" class="table table-bordered font-monospace" aria-label="Subnet Table">
         <thead>
             <tr>
                 <th id="subnetHeader" style="display: table-cell;">Subnet address</th>
-                <th id="netmaskHeader" style="display: none;">Netmask</th>
                 <th id="rangeHeader" style="display: table-cell;">Range of addresses</th>
                 <th id="useableHeader" style="display: table-cell;">Usable IPs</th>
                 <th id="hostsHeader" style="display: table-cell;">Hosts</th>
-                <th id="noteHeader" colspan="100%" style="display: table-cell;">
+                <th id="noteHeader" aria-label="Note" colspan="100%" style="display: table-cell;">
                     Note
-                    <div style="float:right;"><span class="split">Split</span>/<span class="join">Join</span></div>
+                    <div style="float:right;"><span id="splitHeader" aria-label="Split" class="split">Split</span>/<span id="joinHeader" aria-label="Join" class="join">Join</span></div>
                 </th>
             </tr>
         </thead>
         <tbody id="calcbody">
-            <tr id="row_10-0-0-0_17">
-                <td class="row_address">Loading...</td>
-                <td class="row_range"></td>
-                <td class="row_usable"></td>
-                <td class="row_hosts"></td>
-                <td class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
-                <td rowspan="1" colspan="13" class="split rotate"><span></span></td>
-                <td rowspan="14" colspan="1" class="join rotate"><span></span></td>
+            <tr id="row_10-0-0-0_16" aria-label="10.0.0.0/16">
+                <td aria-labelledby="subnetHeader" class="row_address">Loading...</td>
+                <td aria-labelledby="rangeHeader" class="row_range"></td>
+                <td aria-labelledby="useableHeader" class="row_usable"></td>
+                <td aria-labelledby="hostsHeader" class="row_hosts"></td>
+                <td aria-labelledby="noteHeader" class="note"><label><input type="text" class="form-control shadow-none p-0"></label></td>
+                <td aria-labelledby="splitHeader" rowspan="1" colspan="13" class="split rotate"><span></span></td>
+                <td aria-labelledby="joinHeader" rowspan="14" colspan="1" class="join rotate"><span></span></td>
             </tr>
         </tbody>
     </table>
