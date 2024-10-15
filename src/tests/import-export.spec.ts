@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('Default Export Content', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByRole('button', { name: 'Tools' }).click();
   await page.getByRole('link', { name: 'Import / Export' }).click();
   await expect(page.locator('#importExportModalLabel')).toContainText('Import/Export');
@@ -11,7 +11,7 @@ test('Default Export Content', async ({ page }) => {
 });
 
 test('Default (AWS) Export Content', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByRole('button', { name: 'Tools' }).click();
   await page.getByRole('link', { name: 'Mode - AWS' }).click();
   await page.getByRole('button', { name: 'Tools' }).click();
@@ -20,7 +20,7 @@ test('Default (AWS) Export Content', async ({ page }) => {
 });
 
 test('Default (Azure) Export Content', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByRole('button', { name: 'Tools' }).click();
   await page.getByRole('link', { name: 'Mode - Azure' }).click();
   await page.getByRole('button', { name: 'Tools' }).click();
@@ -30,7 +30,7 @@ test('Default (Azure) Export Content', async ({ page }) => {
 });
 
 test('Import 192.168.0.0/24', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByRole('button', { name: 'Tools' }).click();
   await page.getByRole('link', { name: 'Import / Export' }).click();
   await page.getByLabel('Import/Export Content').click();
@@ -42,6 +42,6 @@ test('Import 192.168.0.0/24', async ({ page }) => {
 });
 
 //test('Test', async ({ page }) => {
-//  await page.goto('https://127.0.0.1:8443/');
+//  await page.goto('/');
 //});
 

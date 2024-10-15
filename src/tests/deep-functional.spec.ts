@@ -18,7 +18,7 @@ test('Deep Functional Test', async ({ page }) => {
   //   - AWS/Azure Mode
   //   - Import Reddit Example Config
   //   - Change Network Size
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   // Change 10.0.0.0/8 -> 172.16.0.0/12
   await page.getByLabel('Network Address').click();
   await page.getByLabel('Network Address').press('Shift+Home');
@@ -188,5 +188,5 @@ test('Deep Functional Test', async ({ page }) => {
 
 
 //test('Test', async ({ page }) => {
-//  await page.goto('https://127.0.0.1:8443/');
+//  await page.goto('/');
 //});

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('CIDR Input Typing', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByLabel('Network Address').click();
   await page.getByLabel('Network Address').press('End');
   await page.getByLabel('Network Address').press('Shift+Home');
@@ -12,7 +12,7 @@ test('CIDR Input Typing', async ({ page }) => {
 });
 
 test('CIDR Input Paste', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByLabel('Network Address').click();
   await page.getByLabel('Network Address').press('End');
   await page.getByLabel('Network Address').press('Shift+Home');
@@ -35,7 +35,7 @@ test('CIDR Input Paste', async ({ page }) => {
 });
 
 test('About Dialog', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.locator('#info_icon').click();
   await expect(page.locator('#aboutModalLabel')).toContainText('About Visual Subnet Calculator');
   await expect(page.getByLabel('About Visual Subnet Calculator')).toContainText('Design Tenets');
@@ -44,7 +44,7 @@ test('About Dialog', async ({ page }) => {
 });
 
 test('GitHub Link', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   const page1Promise = page.waitForEvent('popup');
   await page.getByLabel('GitHub').click();
   const page1 = await page1Promise;
@@ -52,12 +52,12 @@ test('GitHub Link', async ({ page }) => {
 });
 
 test('Table Header Standard Mode', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await expect(page.locator('#useableHeader')).toContainText('Usable IPs');
 });
 
 test('Table Header AWS Mode', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await expect(page.locator('#useableHeader')).toContainText('Usable IPs');
   await page.getByRole('button', { name: 'Tools' }).click();
   await page.getByRole('link', { name: 'Mode - AWS' }).click();
@@ -67,7 +67,7 @@ test('Table Header AWS Mode', async ({ page }) => {
 });
 
 test('Table Header Azure Mode', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await expect(page.locator('#useableHeader')).toContainText('Usable IPs');
   await page.getByRole('button', { name: 'Tools' }).click();
   await page.getByRole('link', { name: 'Mode - Azure' }).click();
@@ -78,7 +78,7 @@ test('Table Header Azure Mode', async ({ page }) => {
 
 
 test('Table Header AWS then Standard', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await expect(page.locator('#useableHeader')).toContainText('Usable IPs');
   await page.getByRole('button', { name: 'Tools' }).click();
   await page.getByRole('link', { name: 'Mode - AWS' }).click();
@@ -90,7 +90,7 @@ test('Table Header AWS then Standard', async ({ page }) => {
 });
 
 test('Color Palette', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await expect(page.getByLabel('Change Colors').locator('span')).toContainText('Change Colors »');
   await page.getByText('Change Colors »').click();
   await expect(page.getByLabel('Color 1', { exact: true })).toBeVisible();
@@ -109,7 +109,7 @@ test('Color Palette', async ({ page }) => {
 });
 
 test('Test Default Colors', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/index.html?c=1N4IgbiBcIEwgNCARlEBGADAOm7g9GgGwIgDOUoGA5hSBgBa0YCWTAVkwNYUC+ia3SMB590HIbEHDEAZikjRaVhJjjQAFnmIArPNEy1IQlpAB2PSP6MVyjYYAcJgJx6dhzCbQDelkDNtG7jCecj6Ipu6avPy6PgoiQA');
+  await page.goto('/index.html?c=1N4IgbiBcIEwgNCARlEBGADAOm7g9GgGwIgDOUoGA5hSBgBa0YCWTAVkwNYUC+ia3SMB590HIbEHDEAZikjRaVhJjjQAFnmIArPNEy1IQlpAB2PSP6MVyjYYAcJgJx6dhzCbQDelkDNtG7jCecj6Ipu6avPy6PgoiQA');
   await page.getByText('Change Colors »').click();
   // Set the top 10 rows to the default colors and check that they are correct
   await page.getByLabel('Color 1', { exact: true }).click();

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('Bad Network Address', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByLabel('Network Address').click();
   await page.getByLabel('Network Address').fill('1');
   await page.locator('html').click();
@@ -10,7 +10,7 @@ test('Bad Network Address', async ({ page }) => {
 });
 
 test('Bad Network Size', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByLabel('Network Size').click();
   await page.getByLabel('Network Size').fill('33');
   await page.locator('html').click();
@@ -19,7 +19,7 @@ test('Bad Network Size', async ({ page }) => {
 });
 
 test('Prevent Go on Bad Input', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByLabel('Network Size').click();
   await page.getByLabel('Network Size').fill('33');
   await page.locator('html').click();
@@ -30,7 +30,7 @@ test('Prevent Go on Bad Input', async ({ page }) => {
 
 
 test('Network Boundary Correction', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByLabel('Network Address').click();
   await page.getByLabel('Network Address').fill('123.45.67.89');
   await page.getByLabel('Network Size').click();
@@ -49,7 +49,7 @@ test('Network Boundary Correction', async ({ page }) => {
 });
 
 test('Subnet Too Small for AWS Mode', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await expect(page.locator('#useableHeader')).toContainText('Usable IPs');
   await page.getByRole('button', { name: 'Tools' }).click();
   await page.getByRole('link', { name: 'Mode - AWS' }).click();
@@ -62,7 +62,7 @@ test('Subnet Too Small for AWS Mode', async ({ page }) => {
 });
 
 test('Subnet Too Small for Azure Mode', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await expect(page.locator('#useableHeader')).toContainText('Usable IPs');
   await page.getByRole('button', { name: 'Tools' }).click();
   await page.getByRole('link', { name: 'Mode - Azure' }).click();

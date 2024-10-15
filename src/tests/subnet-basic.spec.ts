@@ -7,7 +7,7 @@ async function getClipboardText(page) {
 }
 
 test('Renders Max Depth /0 to /32', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByLabel('Network Address').click();
   await page.getByLabel('Network Address').press('Shift+Home');
   await page.getByLabel('Network Address').fill('0.0.0.0');
@@ -56,7 +56,7 @@ test('Renders Max Depth /0 to /32', async ({ page }) => {
 });
 
 test('Change To 192.168.0.0/24', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByLabel('Network Address').click();
   await page.getByLabel('Network Address').fill('192.168.0.0');
   await page.getByLabel('Network Size').click();
@@ -71,7 +71,7 @@ test('Change To 192.168.0.0/24', async ({ page }) => {
 });
 
 test('Deep /32 Split', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByText('/16', { exact: true }).click();
   await page.getByLabel('10.0.128.0/17', { exact: true }).getByText('/17', { exact: true }).click();
   await page.getByLabel('10.0.128.0/18', { exact: true }).getByText('/18', { exact: true }).click();
@@ -105,28 +105,28 @@ test('Deep /32 Split', async ({ page }) => {
 });
 
 test('Usable IPs - Standard', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByRole('button', { name: 'Tools' }).click();
   await page.getByRole('link', { name: 'Mode - Standard' }).click();
   await expect(page.getByLabel('10.0.0.0/16', { exact: true }).getByLabel('Usable IPs')).toContainText('10.0.0.1 - 10.0.255.254');
 });
 
 test('Usable IPs - AWS', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByRole('button', { name: 'Tools' }).click();
   await page.getByRole('link', { name: 'Mode - AWS' }).click();
   await expect(page.getByLabel('10.0.0.0/16', { exact: true }).getByLabel('Usable IPs')).toContainText('10.0.0.4 - 10.0.255.254');
 });
 
 test('Usable IPs - Azure', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByRole('button', { name: 'Tools' }).click();
   await page.getByRole('link', { name: 'Mode - Azure' }).click();
   await expect(page.getByLabel('10.0.0.0/16', { exact: true }).getByLabel('Usable IPs')).toContainText('10.0.0.4 - 10.0.255.254');
 });
 
 test('Note Splitting', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByLabel('Note Split/Join').click();
   await page.getByLabel('Note Split/Join').fill('This should be duplicated!');
   await page.getByRole('cell', { name: '/16 Split' }).click();
@@ -135,19 +135,19 @@ test('Note Splitting', async ({ page }) => {
 });
 
 test('Note Joining Same', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/index.html?c=1N4IgbiBcIEwgNCARlEBGADAOm7g9GgGwIgDOUoGA5hSBgBa0B2qAKvQJakAEp9A9gFcANgBNuSAKbdRggA7COAYwCGAF0miAhCAC+iNI0igW0dl14CR4qTPmLVG7Xt2ugA');
+  await page.goto('/index.html?c=1N4IgbiBcIEwgNCARlEBGADAOm7g9GgGwIgDOUoGA5hSBgBa0B2qAKvQJakAEp9A9gFcANgBNuSAKbdRggA7COAYwCGAF0miAhCAC+iNI0igW0dl14CR4qTPmLVG7Xt2ugA');
   await page.getByLabel('/16 Join').click();
   await expect(page.getByLabel('Note Split/Join')).toHaveValue('This should be duplicated!');
 });
 
 test('Note Joining Different', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/index.html?c=1N4IgbiBcIEwgNCARlEBGADAOm7g9GgGwIgDOUoGA5hSBgBa0B2qAKvQJakAEp9A9gFcANgBNuSAKbdRggA7COAYwCGAF0miAhNwCCIAL6I0jSKBbR2XXgJHipM+YtUbt3AEKGD3oA');
+  await page.goto('/index.html?c=1N4IgbiBcIEwgNCARlEBGADAOm7g9GgGwIgDOUoGA5hSBgBa0B2qAKvQJakAEp9A9gFcANgBNuSAKbdRggA7COAYwCGAF0miAhNwCCIAL6I0jSKBbR2XXgJHipM+YtUbt3AEKGD3oA');
   await page.getByLabel('/16 Join').click();
   await expect(page.getByLabel('Note Split/Join')).toBeEmpty();
 });
 
 test('Color Splitting', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await page.getByText('Change Colors »').click();
   await page.getByLabel('Color 5').click();
   await page.getByRole('cell', { name: '/16 Subnet Address' }).click();
@@ -158,17 +158,17 @@ test('Color Splitting', async ({ page }) => {
 });
 
 test('Color Joining Same', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/index.html?c=1N4IgbiBcIEwgNCARlEBGADAOm7g9GgGwIgDOUoGA5hSBgBa0DGqAxAJxIBmhXXIAX0RpGkUC2gduvfgLkCgA');
+  await page.goto('/index.html?c=1N4IgbiBcIEwgNCARlEBGADAOm7g9GgGwIgDOUoGA5hSBgBa0DGqAxAJxIBmhXXIAX0RpGkUC2gduvfgLkCgA');
   await page.getByLabel('/16 Join').click();
   await expect(page.getByRole('row', { name: '10.0.0.0/16' })).toHaveCSS('background-color', 'rgb(155, 246, 255)');
 });
 
 test('Color Joining Different', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/index.html?c=1N4IgbiBcIEwgNCARlEBGADAOm7g9GgGwIgDOUoGA5hSBgBa0DGqAxAJxIBmhXXIAX0RpGkUC2isuAEz5JiAxQKA');
+  await page.goto('/index.html?c=1N4IgbiBcIEwgNCARlEBGADAOm7g9GgGwIgDOUoGA5hSBgBa0DGqAxAJxIBmhXXIAX0RpGkUC2isuAEz5JiAxQKA');
   await page.getByLabel('/16 Join').click();
   await expect(page.getByRole('row', { name: '10.0.0.0/16' })).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
 });
 
 //test('Test', async ({ page }) => {
-//  await page.goto('https://127.0.0.1:8443/');
+//  await page.goto('/');
 //});

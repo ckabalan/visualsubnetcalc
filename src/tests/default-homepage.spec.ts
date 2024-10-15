@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('Default Homepage Rendering', async ({ page }) => {
-  await page.goto('https://127.0.0.1:8443/');
+  await page.goto('/');
   await expect(page).toHaveTitle(/Visual Subnet Calculator/);
   await expect(page.getByRole('heading')).toContainText('Visual Subnet Calculator');
   await expect(page.getByLabel('Network Address')).toHaveValue('10.0.0.0');
