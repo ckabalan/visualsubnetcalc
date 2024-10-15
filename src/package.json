@@ -1,14 +1,19 @@
 {
-	"dependencies": {
-		"bootstrap": "^5.3.3",
-		"http-server": "^14.1.1",
-		"lz-string": "^1.5.0"
-	},
-	"scripts": {
-		"postinstall": "sudo npm install -g sass",
-		"build": "sass --style compressed scss/custom.scss:../dist/css/bootstrap.min.css && cp node_modules/lz-string/libs/lz-string.min.js ../dist/js/lz-string.min.js",
-		"setup:certs": "mkdir -p certs; mkcert -cert-file certs/cert.pem -key-file certs/cert.key localhost 127.0.0.1",
-		"start": "node node_modules/http-server/bin/http-server ../dist -c-1",
-		"local-secure-start": "node node_modules/http-server/bin/http-server ../dist -c-1 -C certs/cert.pem -K certs/cert.key -S -p 8443"
-	}
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "http-server": "^14.1.1",
+    "lz-string": "^1.5.0"
+  },
+  "scripts": {
+    "postinstall": "sudo npm install -g sass",
+    "build": "sass --style compressed scss/custom.scss:../dist/css/bootstrap.min.css && cp node_modules/lz-string/libs/lz-string.min.js ../dist/js/lz-string.min.js",
+    "test": "npx playwright test",
+    "setup:certs": "mkdir -p certs; mkcert -cert-file certs/cert.pem -key-file certs/cert.key localhost 127.0.0.1",
+    "start": "node node_modules/http-server/bin/http-server ../dist -c-1",
+    "local-secure-start": "node node_modules/http-server/bin/http-server ../dist -c-1 -C certs/cert.pem -K certs/cert.key -S -p 8443"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/node": "^22.7.5"
+  }
 }
