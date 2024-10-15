@@ -51,6 +51,21 @@
     border-bottom:1px black dotted;
 }
 
+#whats_new {
+    cursor:pointer !important;
+    text-align: right;
+    width:15rem;
+    float:right;
+}
+
+#whats_new a {
+    width:15rem;
+    text-align: right;
+    text-decoration: none;
+    border-bottom:1px var(--bs-success) dotted;
+}
+
+
 #copy_url {
     cursor:pointer !important;
     text-align: center;
