@@ -209,6 +209,7 @@ function isMatchingSize(subnet1, subnet2) {
 $('#calcbody').on('click', 'td.split,td.join', function(event) {
     // HTML DOM Data elements! Yay! See the `data-*` attributes of the HTML tags
     mutate_subnet_map(this.dataset.mutateVerb, this.dataset.subnet, '')
+    this.dataset.subnet = sortIPCIDRs(this.dataset.subnet)
     renderTable(operatingMode);
 })
 
@@ -235,7 +236,7 @@ function renderTable(operatingMode) {
     addRowTree(subnetMap, 0, maxDepth, operatingMode)
 }
 
-function addRowTree(subnetTree, depth, maxDepth,operatingMode) {
+function addRowTree(subnetTree, depth, maxDepth, operatingMode) {
     for (let mapKey in subnetTree) {
         if (mapKey.startsWith('_')) { continue; }
         if (has_network_sub_keys(subnetTree[mapKey])) {
@@ -786,6 +787,7 @@ $( document ).ready(function() {
 function exportConfig(isMinified = true) {
     const baseNetwork = Object.keys(subnetMap)[0]
     let miniSubnetMap = {};
+    subnetMap = sortIPCIDRs(subnetMap)
     if (isMinified) {
         minifySubnetMap(miniSubnetMap, subnetMap, baseNetwork)
     }
@@ -924,10 +926,51 @@ function importConfig(text) {
     }
     $('#network').val(subnetNet)
     $('#netsize').val(subnetSize)
-    subnetMap = text['subnets'];
+    maxNetSize = subnetSize
+    subnetMap = sortIPCIDRs(text['subnets']);
     operatingMode = text['operating_mode'] || 'Standard'
     switchMode(operatingMode);
 
+}
+
+function sortIPCIDRs(obj) {
+  // Base case: if the value is an empty object, return it
+  if (typeof obj === 'object' && Object.keys(obj).length === 0) {
+    return {};
+  }
+
+  // Separate CIDR entries from metadata
+  const entries = Object.entries(obj);
+  const cidrEntries = entries.filter(([key]) => !key.startsWith('_'));
+  const metadataEntries = entries.filter(([key]) => key.startsWith('_'));
+
+  // Sort CIDR entries by IP address
+  const sortedCIDREntries = cidrEntries.sort((a, b) => {
+    const ipA = a[0].split('/')[0].split('.').map(Number);
+    const ipB = b[0].split('/')[0].split('.').map(Number);
+
+    for (let i = 0; i < 4; i++) {
+      if (ipA[i] !== ipB[i]) {
+        return ipA[i] - ipB[i];
+      }
+    }
+    return 0;
+  });
+
+  // Create sorted object, starting with metadata
+  const sortedObj = {};
+
+  // Add sorted CIDR entries with recursion
+  for (const [key, value] of sortedCIDREntries) {
+    sortedObj[key] = typeof value === 'object' ? sortIPCIDRs(value) : value;
+  }
+
+  // Add metadata entries (unsorted, as they appeared in original)
+  for (const [key, value] of metadataEntries) {
+    sortedObj[key] = value;
+  }
+
+  return sortedObj;
 }
 
 const rgba2hex = (rgba) => `#${rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/).slice(1).map((n, i) => (i === 3 ? Math.round(parseFloat(n) * 255) : parseFloat(n)).toString(16).padStart(2, '0').replace('NaN', '')).join('')}`

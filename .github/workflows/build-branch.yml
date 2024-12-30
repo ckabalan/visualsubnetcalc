@@ -1,0 +1,45 @@
+name: Build Branch
+
+on:
+  push:
+    branches:
+      - develop
+      - feature/*
+  pull_request:
+    branches:
+      - develop
+      - feature/*
+
+jobs:
+  build:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - run: |
+        export MKCERT_VERSION=v1.4.4
+        export PLATFORM=linux
+        curl -L "https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-$PLATFORM-amd64" -o mkcert
+        chmod +x mkcert
+        echo "$PWD/mkcert" >> $GITHUB_PATH
+        mkdir -p src/certs
+        ./mkcert -cert-file src/certs/cert.pem -key-file src/certs/cert.key localhost 127.0.0.1
+    - run: npm ci
+      working-directory: ./src
+    - run: npm run build --if-present
+      working-directory: ./src
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+      working-directory: ./src
+    - name: Run Playwright tests
+      run: npm test
+      working-directory: ./src
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report
+        path: ./src/playwright-report
+        retention-days: 30
