@@ -3,7 +3,7 @@ name: Deploy Branch
 on:
   push:
     branches:
-      - develop
+      - main
 
 permissions:
       id-token: write
@@ -47,10 +47,8 @@ jobs:
       with:
         aws-region: ${{ vars.AWS_DEPLOY_REGION }}
         role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-    - name: AWS Test
+    - name: AWS Deploy
       run: |
         aws sts get-caller-identity
-        aws s3 ls s3://${{ vars.AWS_DEPLOY_S3_BUCKET_NAME }}
-        tree ./dist
-        aws s3 sync ./dist s3://${{ vars.AWS_DEPLOY_S3_BUCKET_NAME }} --delete --dryrun
-        #//aws cloudfront create-invalidation --distribution-id ${{ vars.AWS_DEPLOY_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+        aws s3 sync ./dist s3://${{ vars.AWS_DEPLOY_S3_BUCKET_NAME }} --delete
+        aws cloudfront create-invalidation --distribution-id ${{ vars.AWS_DEPLOY_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
