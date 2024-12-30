@@ -235,7 +235,7 @@ function renderTable(operatingMode) {
     addRowTree(subnetMap, 0, maxDepth, operatingMode)
 }
 
-function addRowTree(subnetTree, depth, maxDepth,operatingMode) {
+function addRowTree(subnetTree, depth, maxDepth, operatingMode) {
     for (let mapKey in subnetTree) {
         if (mapKey.startsWith('_')) { continue; }
         if (has_network_sub_keys(subnetTree[mapKey])) {
@@ -924,6 +924,7 @@ function importConfig(text) {
     }
     $('#network').val(subnetNet)
     $('#netsize').val(subnetSize)
+    maxNetSize = subnetSize
     subnetMap = text['subnets'];
     operatingMode = text['operating_mode'] || 'Standard'
     switchMode(operatingMode);
