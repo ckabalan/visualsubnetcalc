@@ -99,6 +99,26 @@ The full application should then be available within `./dist/`, open `./dist/ind
      - Broadcast Address (last network address)
 
 
+## Running in a container
+
+The application is also available as a container from https://hub.docker.com/r/ckabalan/visualsubnetcalc.
+The container is built automatically and pushed to dockerhub on pushes to the develop branch and when when a new git tag is created.
+
+### Available Image Tags
+
+| Image Tag| Description |
+|----------|----------|
+| develop  | Images built from the develop branch |
+| latest   | The latest container image that points to the most recent semantic version built from the main branch |
+| v1.1.7   | Semantic version generated from git tag from the main branch|
+
+
+### Running locally
+
+```bash
+# Unprivilged container exposes port 8080 and runs as a non root user.
+docker run -d -p8080:8080 --name visualsubnetcalc ckabalan/visualsubnetcalc:latest
+```
 
 ## Credits
 
