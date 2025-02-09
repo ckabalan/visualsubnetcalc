@@ -8,6 +8,10 @@ Metadata:
           default: Naming
         Parameters:
           - DomainName
+      - Label:
+          default: Other
+        Parameters:
+          - ExtraTXTRecord
     ParameterLabels:
       DomainName:
         default: Domain Name
@@ -16,6 +20,10 @@ Parameters:
     Type: String
     Default: ''
     Description: Domain Name for Route53 Hosted Zone and Static S3 Site
+  ExtraTXTRecord:
+    Type: String
+    Default: ''
+    Description: Extra TXT record for the root domain, such as for validation of domain ownership. Will be enclosed in quotes automatically.
 Resources:
   OriginAccessIdentity:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
@@ -170,6 +178,17 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub 'VisualSubnetCalc'
+  CertificateWWW:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub 'www.${DomainName}'
+      DomainValidationOptions:
+        - DomainName: !Sub 'www.${DomainName}'
+          HostedZoneId: !Ref 'HostedZone'
+      ValidationMethod: DNS
+      Tags:
+        - Key: Name
+          Value: !Sub 'VisualSubnetCalc'
   CloudFrontAlias:
     Type: AWS::Route53::RecordSet
     Properties:
@@ -180,6 +199,35 @@ Resources:
       HostedZoneId: !Ref 'HostedZone'
       Name: !Sub '${DomainName}.'
       Type: A
+  CloudFrontAliasWWW:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt 'CloudFrontWWW.DomainName'
+        HostedZoneId: Z2FDTNDATAQYW2
+      Comment: To CloudFront Redirect
+      HostedZoneId: !Ref 'HostedZone'
+      Name: !Sub 'www.${DomainName}.'
+      Type: A
+  SPFRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Sub '${DomainName}.'
+      Type: TXT
+      TTL: 300
+      ResourceRecords:
+        - !Sub '"${ExtraTXTRecord}"'
+        - '"v=spf1 -all"'
+  DMARCRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Sub '_dmarc.${DomainName}.'
+      Type: TXT
+      TTL: 300
+      ResourceRecords:
+        - '"v=DMARC1; p=reject;"'
   CloudFront:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -197,6 +245,7 @@ Resources:
           TargetOriginId: !Sub 'S3-Static-Website'
           ViewerProtocolPolicy: redirect-to-https
           Compress: true
+          ResponseHeadersPolicyId: !Ref HstsResponseHeadersPolicy
         DefaultRootObject: index.html
         Enabled: true
         HttpVersion: http2
@@ -213,3 +262,102 @@ Resources:
           AcmCertificateArn: !Ref 'Certificate'
           MinimumProtocolVersion: TLSv1.2_2021
           SslSupportMethod: sni-only
+  CloudFrontWWW:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: Visual Subnet Calculator WWW Redirect
+        Aliases:
+          - !Sub 'www.${DomainName}'
+        DefaultCacheBehavior:
+          ForwardedValues:
+            QueryString: false
+          TargetOriginId: !Sub 'S3-Static-Website'
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt RedirectWWWFunction.FunctionARN
+          ResponseHeadersPolicyId: !Ref HstsResponseHeadersPolicy
+        DefaultRootObject: index.html
+        Enabled: true
+        HttpVersion: http2
+        Origins:
+          - DomainName: !Sub
+              - visualsubnetcalc-static-website-${Unique}.s3.${AWS::Region}.amazonaws.com
+              - Unique: !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref 'AWS::StackId' ] ] ] ]
+            Id: !Sub 'S3-Static-Website'
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${OriginAccessIdentity}'
+        PriceClass: PriceClass_100
+        IPV6Enabled: false
+        ViewerCertificate:
+          AcmCertificateArn: !Ref 'CertificateWWW'
+          MinimumProtocolVersion: TLSv1.2_2021
+          SslSupportMethod: sni-only
+  RedirectWWWFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: redirect-www-to-non-www
+      AutoPublish: true
+      FunctionConfig:
+        Comment: "Redirects domains starting with www. to non-www."
+        Runtime: cloudfront-js-2.0
+      FunctionCode: |
+        function handler(event) {
+          var request = event.request;
+          var headers = request.headers;
+          
+          // Retrieve the Host header value.
+          var hostHeader = headers.host ? headers.host.value : "";
+          
+          // Check if the host starts with "www."
+          if (hostHeader.startsWith("www.")) {
+            // Remove the "www." prefix
+            var newHost = hostHeader.slice(4);
+            
+            // Construct the new URL preserving the URI and query string (if any)
+            var redirectUrl = "https://" + newHost + request.uri;
+            if (request.querystring && request.querystring.length > 0) {
+              redirectUrl += "?" + request.querystring;
+            }
+            
+            // Return a 301 redirect response
+            return {
+              statusCode: 301,
+              statusDescription: 'Moved Permanently',
+              headers: {
+                "location": { "value": redirectUrl },
+                "cache-control": { "value": "no-cache" }
+              }
+            };
+          }
+          
+          // If no redirection is required, continue processing the request as normal.
+          return request;
+        }
+  HstsResponseHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: HSTS-Policy
+        Comment: "Adds HSTS header (Strict-Transport-Security)"
+        SecurityHeadersConfig:
+          StrictTransportSecurity:
+            Override: true
+            AccessControlMaxAgeSec: 31536000
+            IncludeSubdomains: true
+            Preload: true
+          ContentTypeOptions:
+            Override: false
+          FrameOptions:
+            Override: false
+            FrameOption: DENY
+          ReferrerPolicy:
+            Override: false
+            ReferrerPolicy: no-referrer
+          XSSProtection:
+            Override: false
+            Protection: true
+        CustomHeadersConfig:
+          Items: []
