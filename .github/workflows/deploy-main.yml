@@ -1,4 +1,4 @@
-name: Deploy Branch
+name: Deploy Main
 
 on:
   push:
@@ -10,7 +10,12 @@ permissions:
       contents: read
 
 jobs:
+  test:
+    name: Test
+    uses: ./.github/workflows/test-branch.yml
   deploy:
+    needs: test
+    name: Deploy to AWS
     timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
@@ -30,25 +35,28 @@ jobs:
       working-directory: ./src
     - run: npm run build --if-present
       working-directory: ./src
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-      working-directory: ./src
-    - name: Run Playwright tests
-      run: npm test
-      working-directory: ./src
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: ./src/playwright-report
-        retention-days: 30
+    - name: Replace Deployment URL
+      run: |
+        sed -i "s|__DEPLOY_URL__|${{ vars.DEPLOY_URL }}|g" dist/index.html
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: ${{ vars.AWS_DEPLOY_REGION }}
         role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-    - name: AWS Deploy
+    - name: Deploy to S3
       run: |
         aws sts get-caller-identity
         aws s3 sync ./dist s3://${{ vars.AWS_DEPLOY_S3_BUCKET_NAME }} --delete
-        aws cloudfront create-invalidation --distribution-id ${{ vars.AWS_DEPLOY_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+    - name: Invalidate CloudFront
+      run: |
+        echo "Creating CloudFront invalidation..."
+        INVALIDATION_ID=$(aws cloudfront create-invalidation \
+          --distribution-id ${{ vars.AWS_DEPLOY_CLOUDFRONT_DISTRIBUTION_ID }} \
+          --paths "/*" \
+          --query 'Invalidation.Id' --output text)
+        echo "Created invalidation with ID: $INVALIDATION_ID"
+        echo "Waiting for CloudFront invalidation to complete..."
+        aws cloudfront wait invalidation-completed \
+          --distribution-id ${{ vars.AWS_DEPLOY_CLOUDFRONT_DISTRIBUTION_ID }} \
+          --id $INVALIDATION_ID
+        echo "CloudFront invalidation completed."
