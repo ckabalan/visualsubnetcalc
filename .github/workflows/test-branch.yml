@@ -1,17 +1,17 @@
-name: Build Branch
+name: Test Branch
 
 on:
+  workflow_call:
   push:
     branches:
-      - develop
-      - feature/*
+      - 'feature/*'
   pull_request:
     branches:
-      - develop
-      - feature/*
+      - '**'
 
 jobs:
-  build:
+  test:
+    name: Run Playwright
     timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
@@ -31,6 +31,9 @@ jobs:
       working-directory: ./src
     - run: npm run build --if-present
       working-directory: ./src
+    - name: Replace Deployment URL
+      run: |
+        sed -i "s|__DEPLOY_URL__|${{ vars.DEPLOY_URL }}|g" dist/index.html
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
       working-directory: ./src
