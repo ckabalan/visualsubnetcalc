@@ -1,0 +1,60 @@
+# visualsubnetcalc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: visualsubnetcalc
+    app.kubernetes.io/instance: service-visualsubnetcalc
+  name: visualsubnetcalc
+  namespace: visualsubnetcalc
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: visualsubnetcalc
+  template:
+    metadata:
+      labels:
+        app: visualsubnetcalc
+    spec:
+      containers:
+      - name: visualsubnetcalc
+        image: ghcr.io/adelerhof/subnetcalc-main:20241101160704 # Change this to your own image
+        resources: # Tune these values to your needs
+          requests:
+            memory: "25Mi"
+            cpu: "100m"
+          limits:
+            memory: "100Mi"
+            cpu: "250m"
+        securityContext:
+          capabilities:
+            drop:
+              - NET_RAW
+          runAsUser: 2000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          seccompProfile:
+            type: RuntimeDefault
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp
+      volumes:
+        - emptyDir: {}
+          name: tmp
+      nodeSelector:
+        kubernetes.io/os: linux
+      imagePullSecrets:
+      - name: ghcrio
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: visualsubnetcalc
+      serviceAccountName: visualsubnetcalc-sa
