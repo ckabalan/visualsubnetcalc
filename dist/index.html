@@ -34,12 +34,19 @@
 <body>
 <div class="container-xxl mt-3">
     <div class="float-end" id="navigation">
+        <a href="#" id="faq_icon" data-bs-toggle="modal" data-bs-target="#faqModal" aria-label="FAQ">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286m1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94"/>
+              </svg>
+        </a>
         <a href="#" id="info_icon" data-bs-toggle="modal" data-bs-target="#aboutModal" aria-label="About">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                 <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
             </svg>
-        </a><a href="https://github.com/ckabalan/visualsubnetcalc" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        </a>
+        <a href="https://github.com/ckabalan/visualsubnetcalc" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
               <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
             </svg>
@@ -152,7 +159,7 @@
         <div class="d-inline-block align-top align-top pt-1 ps-2 d-none" id="colors_word_close" aria-label="Stop Changing Colors"><span>&#171; Stop Changing Colors</span></div>
         <div class="d-inline-block align-top pt-1 ps-3" id="copy_url"><span>Copy Shareable URL</span></div>
         <div class="d-inline-block align-top pt-1 ps-3" id="whats_new">
-            <a title="Released 2025-02-11" class="link-success" href="https://github.com/ckabalan/visualsubnetcalc/releases" target="_blank" rel="noopener noreferrer" aria-label="What's New">v1.3.6 (What's New?)</a>
+            <a title="Released 2025-04-11" class="link-success" href="https://github.com/ckabalan/visualsubnetcalc/releases" target="_blank" rel="noopener noreferrer" aria-label="What's New">v1.3.7 (What's New?)</a>
         </div>
     </div>
 
@@ -196,7 +203,37 @@
     </div>
 
 
-
+    <div class="modal fade" id="faqModal" tabindex="-1" aria-labelledby="faqModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="faqModalLabel">FAQ - Visual Subnet Calculator</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h4>What is subnetting?</h4>
+                    <p>Subnetting is the practice of dividing a large network into smaller subnetworks or "subnets," allowing for more efficient management and routing of network traffic. Think of subnetting as organizing a crowded sports field by creating dedicated areas for each sport, reducing chaos, and improving coordination. Each subnet functions as a separate network with its own unique IP address range, optimizing performance by localizing network traffic.</p>
+                    <p>Subnetting involves using subnet masks, special identifiers that help devices determine which portion of an IP address belongs to the network and which to individual hosts. This logical division enhances security and resource management by clearly delineating network boundaries and roles.</p>
+                    <h4>Why is subnetting important?</h4>
+                    <p>Subnetting improves network performance and speed by reducing unnecessary broadcast traffic, ensuring data packets remain within their designated subnet. It significantly reduces network congestion, as routers only forward traffic intended for devices within specific subnets. Subnetting also enhances network security by controlling device access to sensitive resources, making it easier to identify and isolate threats.</p>
+                    <p>It simplifies network management and supports future growth, allowing administrators to efficiently allocate IP addresses and configure subnets based on organizational needs. Overall, subnetting provides greater visibility, control, and scalability, essential for robust network operation in any sizeable organization.</p>
+                    <h4>How does subnetting work?</h4>
+                    <p>Subnetting works by dividing an IP address into two segments: the network portion, which identifies the overall network, and the host portion, which identifies individual devices within that network. Using a subnet mask, administrators indicate exactly which bits belong to each part, and with CIDR (Classless Inter-Domain Routing) this division is expressed as a “slash number” appended to the IP address (for example, /24). This slash number indicates the number of bits reserved for the network ID; the remaining bits define the host addresses available within the subnet.</p>
+                    <p>As you increase the slash number, more bits shift to form the network ID, resulting in smaller, more tightly scoped subnets with fewer host addresses, while decreasing the slash number provides a larger pool of addresses for hosts. This flexible method allows for optimal allocation of IP addresses tailored to the size and security requirements of each network segment.</p>
+                    <h4>How does the Visual Subnet Calculator help me?</h4>
+                    <p>Visual Subnet Calculator helps network professionals simplify and expedite the design process by transforming complex subnet calculations into intuitive, visual layouts. It supports various networking modes (including standard, AWS, and Azure) by automatically accounting for reserved addresses, so you can design with confidence whether planning small subnets or complex architectures. Its clear, user-focused interface, rooted in simplicity and ease-of-use, means even first-time users can quickly lay out and adjust network designs without getting bogged down in intricate math.</p>
+                    <p>By enabling you to save and share your designs effortlessly, the tool fosters collaboration and streamlines team discussions. It puts you in full control of your data while reducing common errors and speeding up deployment. Ultimately, the Visual Subnet Calculator is designed to let you focus on designing effective networks rather than struggling with manual calculations.</p>
+                    <h4>How is Visual Subnet Calculator different than the binary/math calculators online?</h4>
+                    <p>The Visual Subnet Calculator prioritizes simplicity, intuitive visual design, and rapid usability, making it more accessible than traditional binary or mathematical subnet calculators. Instead of forcing users into complex binary arithmetic, it allows administrators to visually layout and manipulate network designs, enhancing understanding and reducing errors.</p>
+                    <p>The focus is on practical network administration rather than academic subnetting exercises, reflecting real-world network design scenarios. It also uniquely supports specialized cloud subnetting rules, such as AWS and Azure, clearly indicating reserved IP addresses for these platforms. Lastly, it encourages collaboration and community input, continuously refining its capabilities based on real-world user feedback.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
