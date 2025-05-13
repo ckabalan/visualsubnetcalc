@@ -25,7 +25,7 @@ let infoColumnCount = 5
 //     - Last = Broadcast Address
 // OCI mode:
 //   - Smallest subnet: /30
-//   - Tree reserved addresses per subnet:
+//   - Three reserved addresses per subnet:
 //     - Net+0 = Network Address
 //     - Net+1 = OCI Reserved - Gateway Adress
 //     - Last = Broadcast Address
