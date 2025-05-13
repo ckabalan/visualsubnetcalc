@@ -53,7 +53,7 @@ should align to these tenets, or propose an adjustment to the tenets.
 - Smallest subnet: /30
 - Three reserved addresses per subnet:
   - Network Address (network + 0)
-  - OCI Reserved - Gateway Adress (network + 1)
+  - OCI Reserved - Default Gateway Address (network + 1)
   - Broadcast Address (last network address)
 
 ## Building From Source
