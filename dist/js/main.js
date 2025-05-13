@@ -27,7 +27,7 @@ let infoColumnCount = 5
 //   - Smallest subnet: /30
 //   - Three reserved addresses per subnet:
 //     - Net+0 = Network Address
-//     - Net+1 = OCI Reserved - Gateway Adress
+//     - Net+1 = OCI Reserved - Default Gateway Address
 //     - Last = Broadcast Address
 let noteTimeout;
 let operatingMode = 'Standard'
