@@ -28,6 +28,16 @@ should align to these tenets, or propose an adjustment to the tenets.
   - Network Address (network + 0)
   - Broadcast Address (last network address)
 
+
+### OCI mode ([docs](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/overview.htm#Reserved__reserved_subnet)):
+
+- Smallest subnet: /30
+- Five reserved addresses per subnet:
+  - Network Address (network + 0)
+  - OCI Reserved - Gateway Adress (network + 1)
+  - Broadcast Address (last network address)
+
+
 ### AWS mode ([docs](https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html)):
 
 - Smallest subnet: /28
