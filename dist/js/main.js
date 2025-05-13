@@ -23,6 +23,12 @@ let infoColumnCount = 5
 //     - Net+2 = Reserved - DNS Mapping
 //     - Net+3 = Reserved - DNS Mapping
 //     - Last = Broadcast Address
+// OCI mode:
+//   - Smallest subnet: /30
+//   - Tree reserved addresses per subnet:
+//     - Net+0 = Network Address
+//     - Net+1 = OCI Reserved - Gateway Adress
+//     - Last = Broadcast Address
 let noteTimeout;
 let operatingMode = 'Standard'
 let previousOperatingMode = 'Standard'
@@ -34,12 +40,14 @@ const netsizePatterns = {
     Standard: '^([12]?[0-9]|3[0-2])$',
     AZURE: '^([12]?[0-9])$',
     AWS: '^(1?[0-9]|2[0-8])$',
+    OCI: '^([12]?[0-9]|{30})$',
 };
 
 const minSubnetSizes = {
     Standard: 32,
     AZURE: 29,
     AWS: 28,
+    OCI: 30,
 };
 
 $('input#network').on('paste', function (e) {
@@ -123,6 +131,15 @@ $('#dropdown_aws').click(function() {
     }
 });
 
+$('#dropdown_oci').click(function() {
+    previousOperatingMode = operatingMode;
+    operatingMode = 'OCI';
+
+    if(!switchMode(operatingMode)) {
+        operatingMode = previousOperatingMode;
+        $('#dropdown_'+ operatingMode.toLowerCase()).addClass('active');
+    }
+});
 
 $('#importBtn').on('click', function() {
     importConfig(JSON.parse($('#importExportArea').val()))
@@ -415,6 +432,8 @@ function subnet_usable_first(network, netSize, operatingMode) {
         // AWS reserves 3 additional IPs
         // https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets
         // Azure reserves 3 additional IPs
+        // https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/overview.htm#Reserved__reserved_subnet
+        // OCI reserves 2 additional IPs
         return network + (operatingMode == 'Standard' ? 1 : 4);
     } else {
         return network;
@@ -587,6 +606,9 @@ function mutate_subnet_map(verb, network, subnetTree, propValue = '') {
                         case 'AZURE':
                             var modal_error_message = 'The minimum IPv4 subnet size for Azure is /' + minSubnetSizes[operatingMode] + '.<br/><br/>More Information:<br/><a href="https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#how-small-and-how-large-can-virtual-networks-and-subnets-be" target="_blank" rel="noopener noreferrer">Azure Virtual Network FAQ > How small and how large can virtual networks and subnets be?</a>'
                             break;
+                        case 'OCI':
+                            var modal_error_message = 'The minimum IPv4 subnet size for OCI is /' + minSubnetSizes[operatingMode] + '.<br/><br/>More Information:<br/><a href="https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/overview.htm#Reserved__reserved_subnet" target="_blank" rel="noopener noreferrer">Infrastructure Services>Networking>Networking Overview>Three IP Addresses in Each Subnet</a>'
+                            break;
                         default:
                             var modal_error_message = 'The minimum size for an IPv4 subnet is /' + minSubnetSizes[operatingMode] + '.<br/><br/>More Information:<br/><a href="https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing" target="_blank" rel="noopener noreferrer">Wikipedia - Classless Inter-Domain Routing</a>'
                             break;
@@ -635,6 +657,9 @@ function switchMode(operatingMode) {
                 case 'AZURE':
                     var validate_error_message = 'Azure Mode - Smallest size is /' + minSubnetSizes[operatingMode]
                     break;
+               case 'OCI':
+                    var validate_error_message = 'OCI Mode - Smallest size is /' + minSubnetSizes[operatingMode]
+                    break;
                 default:
                     var validate_error_message = 'Smallest size is /' + minSubnetSizes[operatingMode]
                     break;
@@ -651,7 +676,7 @@ function switchMode(operatingMode) {
                 }
             });
             // Remove active class from all buttons if needed
-            $('#dropdown_standard, #dropdown_azure, #dropdown_aws').removeClass('active');
+            $('#dropdown_standard, #dropdown_azure, #dropdown_aws, #dropdown_oci').removeClass('active');
             $('#dropdown_' + operatingMode.toLowerCase()).addClass('active');
             isSwitched = true;
         } else {
@@ -661,6 +686,9 @@ function switchMode(operatingMode) {
                     break;
                 case 'AZURE':
                     var modal_error_message = 'One or more subnets are smaller than the minimum allowed for Azure.<br/>The smallest size allowed is /' + minSubnetSizes[operatingMode] + '.<br/>See: <a href="https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#how-small-and-how-large-can-virtual-networks-and-subnets-be" target="_blank" rel="noopener noreferrer">Azure Virtual Network FAQ > How small and how large can virtual networks and subnets be?</a>'
+                    break;
+                case 'OCI':
+                    var modal_error_message = 'One or more subnets are smaller than the minimum allowed for OCI.<br/>The smallest size allowed is /' + minSubnetSizes[operatingMode] + '.<br/>See: <a href="https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/overview.htm#Reserved__reserved_subnet" target="_blank" rel="noopener noreferrer">Infrastructure Services>Networking>Networking Overview>Three IP Addresses in Each Subnet</a>'
                     break;
                 default:
                     var validate_error_message = 'Unknown Error'
@@ -706,6 +734,9 @@ function set_usable_ips_title(operatingMode) {
             break;
         case 'AZURE':
             $('#useableHeader').html('Usable IPs (<a href="https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets" target="_blank" rel="noopener noreferrer" style="color:#000; border-bottom: 1px dotted #000; text-decoration: dotted" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="Azure reserves 5 addresses in each subnet for platform use.<br/>Click to navigate to the Azure documentation.">Azure</a>)')
+            break;
+        case 'OCI':
+            $('#useableHeader').html('Usable IPs (<a href="https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/overview.htm#Reserved__reserved_subnet" target="_blank" rel="noopener noreferrer" style="color:#000; border-bottom: 1px dotted #000; text-decoration: dotted" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="OCI reserves 3 addresses in each subnet for platform use.<br/>Click to navigate to the OCI documentation.">OCI</a>)')
             break;
         default:
             $('#useableHeader').html('Usable IPs')
