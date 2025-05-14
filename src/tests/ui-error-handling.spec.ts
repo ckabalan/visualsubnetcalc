@@ -74,3 +74,15 @@ test('Subnet Too Small for Azure Mode', async ({ page }) => {
   await expect(page.getByText('Azure Mode - Smallest size is /29')).toBeVisible();
 });
 
+test('Subnet Too Small for OCI Mode', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#useableHeader')).toContainText('Usable IPs');
+  await page.getByRole('button', { name: 'Tools' }).click();
+  await page.getByRole('link', { name: 'Mode - OCI' }).click();
+  await page.getByLabel('Network Size').click();
+  await page.getByLabel('Network Size').fill('31');
+  await page.getByRole('button', { name: 'Go' }).click();
+  await expect(page.locator('#notifyModalLabel')).toContainText('Warning!');
+  await expect(page.locator('#notifyModalDescription')).toContainText('Please correct the errors in the form!');
+  await expect(page.getByText('OCI Mode - Smallest size is /30')).toBeVisible();
+});

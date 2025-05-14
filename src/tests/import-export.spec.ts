@@ -29,6 +29,16 @@ test('Default (Azure) Export Content', async ({ page }) => {
   await page.getByLabel('Import/Export', { exact: true }).getByText('Close').click();
 });
 
+test('Default (OCI) Export Content', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Tools' }).click();
+  await page.getByRole('link', { name: 'Mode - OCI' }).click();
+  await page.getByRole('button', { name: 'Tools' }).click();
+  await page.getByRole('link', { name: 'Import / Export' }).click();
+  await expect(page.getByLabel('Import/Export Content')).toHaveValue('{\n  "config_version": "2",\n  "operating_mode": "OCI",\n  "base_network": "10.0.0.0/16",\n  "subnets": {\n    "10.0.0.0/16": {}\n  }\n}');
+  //await page.getByLabel('Import/Export', { exact: true }).getByText('Close').click();
+});
+
 test('Import 192.168.0.0/24', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Tools' }).click();

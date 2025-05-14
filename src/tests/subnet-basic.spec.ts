@@ -125,6 +125,13 @@ test('Usable IPs - Azure', async ({ page }) => {
   await expect(page.getByLabel('10.0.0.0/16', { exact: true }).getByLabel('Usable IPs')).toContainText('10.0.0.4 - 10.0.255.254');
 });
 
+test('Usable IPs - OCI', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Tools' }).click();
+  await page.getByRole('link', { name: 'Mode - OCI' }).click();
+  await expect(page.getByLabel('10.0.0.0/16', { exact: true }).getByLabel('Usable IPs')).toContainText('10.0.0.2 - 10.0.255.254');
+});
+
 test('Note Splitting', async ({ page }) => {
   await page.goto('/');
   await page.getByLabel('Note Split/Join').click();

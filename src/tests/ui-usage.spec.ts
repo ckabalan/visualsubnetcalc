@@ -76,6 +76,15 @@ test('Table Header Azure Mode', async ({ page }) => {
   await expect(page.getByText('Azure reserves 5 addresses in')).toBeVisible();
 });
 
+test('Table Header OCI Mode', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#useableHeader')).toContainText('Usable IPs');
+  await page.getByRole('button', { name: 'Tools' }).click();
+  await page.getByRole('link', { name: 'Mode - OCI' }).click();
+  await expect(page.getByRole('cell', { name: 'Usable IPs', exact: true })).toContainText('Usable IPs (OCI)');
+  await page.getByRole('link', { name: 'OCI' }).hover()
+  await expect(page.getByText('OCI reserves 3 addresses in')).toBeVisible();
+});
 
 test('Table Header AWS then Standard', async ({ page }) => {
   await page.goto('/');
