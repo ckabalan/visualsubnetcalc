@@ -434,7 +434,19 @@ function subnet_usable_first(network, netSize, operatingMode) {
         // Azure reserves 3 additional IPs
         // https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/overview.htm#Reserved__reserved_subnet
         // OCI reserves 2 additional IPs
-        return network + (operatingMode == 'Standard' ? 1 : 4);
+        //return network + (operatingMode == 'Standard' ? 1 : 4);
+        switch (operatingMode) {
+            case 'AWS':
+            case 'AZURE':
+                return network + 4;
+                break;
+            case 'OCI':
+                return network + 2;
+                break;
+            default:
+                return network + 1;
+                break;
+        }            
     } else {
         return network;
     }
@@ -657,7 +669,7 @@ function switchMode(operatingMode) {
                 case 'AZURE':
                     var validate_error_message = 'Azure Mode - Smallest size is /' + minSubnetSizes[operatingMode]
                     break;
-               case 'OCI':
+                case 'OCI':
                     var validate_error_message = 'OCI Mode - Smallest size is /' + minSubnetSizes[operatingMode]
                     break;
                 default:
