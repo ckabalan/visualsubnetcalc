@@ -40,7 +40,7 @@ const netsizePatterns = {
     Standard: '^([12]?[0-9]|3[0-2])$',
     AZURE: '^([12]?[0-9])$',
     AWS: '^(1?[0-9]|2[0-8])$',
-    OCI: '^([12]?[0-9]|{30})$',
+    OCI: '^([12]?[0-9]|30)$',
 };
 
 const minSubnetSizes = {
