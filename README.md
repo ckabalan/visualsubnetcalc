@@ -48,6 +48,14 @@ should align to these tenets, or propose an adjustment to the tenets.
   - Azure Reserved - DNS Mapping
   - Broadcast Address (last network address)
 
+### OCI mode ([docs](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/overview.htm#Reserved__reserved_subnet)):
+
+- Smallest subnet: /30
+- Three reserved addresses per subnet:
+  - Network Address (network + 0)
+  - OCI Reserved - Default Gateway Address (network + 1)
+  - Broadcast Address (last network address)
+
 ## Building From Source
 
 If you have a more opinionated best-practice way to lay out this repository please open an issue.
